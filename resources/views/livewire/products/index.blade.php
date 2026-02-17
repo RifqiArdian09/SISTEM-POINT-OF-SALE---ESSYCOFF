@@ -1,156 +1,140 @@
-<div class="p-6 space-y-8 bg-white dark:bg-zinc-800 min-h-screen text-gray-900 dark:text-white">
-    <!-- Judul -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div class="p-6 lg:p-10 space-y-10 bg-pos-muted min-h-screen font-sans">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Produk</h1>
-            <p class="text-gray-600 dark:text-zinc-300">Kelola semua produk dalam sistem</p>
+            <div class="flex items-center gap-3 mb-2">
+                <div class="size-8 bg-primary-blue/10 rounded-lg flex items-center justify-center text-primary-blue">
+                    <i data-lucide="package" class="size-5"></i>
+                </div>
+                <span class="text-[10px] font-black text-primary-blue uppercase tracking-widest">Manajemen Inventaris</span>
+            </div>
+            <h1 class="text-3xl lg:text-4xl font-black text-pos-foreground tracking-tight">Daftar Produk</h1>
+            <p class="text-pos-secondary font-medium mt-1">Total <span class="text-pos-foreground font-bold">{{ $products->total() }}</span> produk tersedia dalam katalog.</p>
         </div>
+        
         @if(!in_array($filter, ['out_of_stock', 'low_stock']))
-        <flux:button
-            variant="primary"
-            color="sky"
-            icon="plus"
-            href="{{ route('products.create') }}"
-            size="sm">
-            Tambah Produk
-        </flux:button>
+            <a href="{{ route('products.create') }}" 
+                class="flex items-center gap-3 px-6 py-4 rounded-2xl bg-primary-blue text-white font-bold text-sm hover:bg-primary-blue-hover shadow-xl shadow-primary-blue/20 transition-all active:scale-95" 
+                wire:navigate>
+                <i data-lucide="plus-circle" class="size-5"></i>
+                <span>Tambah Produk Baru</span>
+            </a>
         @endif
     </div>
 
-    
-
-
-    <div class="bg-white dark:bg-zinc-800 p-5 rounded-lg shadow-lg border border-gray-200 dark:border-zinc-700 space-y-4 transition-colors duration-200">
-        <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">Cari Produk</label>
-        <flux:input
-            wire:model.live.debounce.300ms="search"
-            placeholder="Cari produk, kategori, atau nama produk..."
-            class="w-full"
-            icon="magnifying-glass" />
+    <!-- Filters & Search -->
+    <div class="bg-white dark:bg-pos-card-grey rounded-[32px] p-6 border border-pos-border dark:border-zinc-800 shadow-sm flex flex-col md:flex-row gap-4 items-center">
+        <div class="relative flex-1 w-full">
+            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-pos-secondary"></i>
+            <input type="text" 
+                wire:model.live.debounce.300ms="search"
+                placeholder="Cari produk berdasarkan nama atau kategori..." 
+                class="w-full h-14 pl-12 pr-6 rounded-2xl bg-pos-muted/50 dark:bg-pos-muted/10 border-none focus:ring-2 focus:ring-primary-blue/20 outline-none text-pos-foreground placeholder:text-pos-secondary/70 font-bold text-sm">
+        </div>
+        <div class="flex items-center gap-2 p-1 bg-pos-muted/50 dark:bg-pos-muted/10 rounded-2xl shrink-0">
+            <button class="px-5 py-3 rounded-xl {{ $filter === null ? 'bg-white dark:bg-pos-card-grey text-primary-blue shadow-sm font-black' : 'text-pos-secondary font-bold hover:text-pos-foreground' }} text-xs transition-all">Semua</button>
+            <button class="px-5 py-3 rounded-xl {{ $filter === 'active' ? 'bg-white dark:bg-pos-card-grey text-primary-blue shadow-sm font-black' : 'text-pos-secondary font-bold hover:text-pos-foreground' }} text-xs transition-all">Aktif</button>
+            <div class="w-px h-6 bg-pos-border mx-1"></div>
+            <button class="px-4 py-3 text-pos-secondary hover:text-pos-error transition-colors">
+                <i data-lucide="sliders-horizontal" class="size-5"></i>
+            </button>
+        </div>
     </div>
 
-    <!-- Tabel Produk -->
-    <div class="bg-white dark:bg-zinc-800 shadow rounded-lg overflow-hidden border border-gray-200 dark:border-zinc-700 transition-colors duration-200">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-700 dark:text-zinc-200">
-                <thead class="bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-zinc-100 uppercase text-xs font-semibold">
+    <!-- Products Table Container -->
+    <div class="bg-white dark:bg-pos-card-grey rounded-[40px] border border-pos-border dark:border-zinc-800 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto no-scrollbar">
+            <table class="w-full text-left">
+                <thead class="bg-pos-card-grey/50 dark:bg-pos-muted/10">
                     <tr>
-                        <th class="px-4 py-3">No</th>
-                        <th class="px-4 py-3">Gambar</th>
-                        <th class="px-4 py-3">Nama</th>
-                        <th class="px-4 py-3">Kategori</th>
-                        <th class="px-4 py-3 text-right">Harga</th>
-                        <th class="px-4 py-3 text-center">Stok</th>
-                        <th class="px-4 py-3 text-right">Aksi</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-pos-secondary uppercase tracking-widest text-center">Gambar</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-pos-secondary uppercase tracking-widest">Produk & Kategori</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-pos-secondary uppercase tracking-widest text-right">Harga Jual</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-pos-secondary uppercase tracking-widest text-center">Status Stok</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-pos-secondary uppercase tracking-widest text-right">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-zinc-700">
+                <tbody class="divide-y divide-pos-border dark:divide-zinc-800">
                     @forelse ($products as $index => $product)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out cursor-pointer">
-                        <td class="px-4 py-3 font-medium text-gray-500 dark:text-zinc-400">
-                            {{ ($products->currentPage() - 1) * $products->perPage() + $index + 1 }}
-                        </td>
-
-                        <!-- Gambar Produk (Bulat) -->
-                        <td class="px-4 py-3">
-                            <div class="flex justify-center">
-                                @if($product->image)
-                                <img
-                                    src="{{ asset('storage/' . $product->image) }}"
-                                    alt="{{ $product->name }}"
-                                    class="w-12 h-12 object-cover rounded-full border-2 border-gray-300 dark:border-gray-600"
-                                    onerror="this.style.display='none'; this.parentNode.querySelector('.fallback').style.display='flex';">
-                                <!-- Fallback jika gambar error -->
-                                <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-600 fallback" style="display:none;">
-                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z"></path>
-                                    </svg>
+                        <tr class="hover:bg-pos-muted/20 dark:hover:bg-pos-muted/5 transition-colors group text-sm">
+                            <!-- Image -->
+                            <td class="px-8 py-5">
+                                <div class="flex justify-center">
+                                    <div class="size-20 rounded-[28px] overflow-hidden bg-pos-muted dark:bg-pos-muted/20 border border-pos-border dark:border-zinc-800 relative group-hover:scale-110 transition-all duration-500 shadow-sm group-hover:shadow-xl group-hover:shadow-primary-blue/10">
+                                        @if($product->image_url)
+                                            <img src="{{ $product->image_url }}" class="w-full h-full object-cover" alt="{{ $product->name }}" loading="lazy">
+                                        @else
+                                            <div class="w-full h-full flex items-center justify-center text-pos-secondary/20 bg-pos-muted/50">
+                                                <i data-lucide="coffee" class="size-8"></i>
+                                            </div>
+                                        @endif
+                                        <div class="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-[28px]"></div>
+                                    </div>
                                 </div>
-                                @else
-                                <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-600">
-                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z"></path>
-                                    </svg>
+                            </td>
+
+                            <!-- Info -->
+                            <td class="px-8 py-5">
+                                <div>
+                                    <h5 class="text-base font-black text-pos-foreground capitalize group-hover:text-primary-blue transition-colors">{{ $product->name }}</h5>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-[10px] font-extrabold text-primary-blue bg-primary-blue/5 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                                            {{ $product->category?->name ?? 'Tanpa Kategori' }}
+                                        </span>
+                                        @if($product->stock <= 5)
+                                            <span class="text-[10px] font-extrabold text-pos-error bg-pos-error/5 px-2 py-0.5 rounded-md uppercase tracking-wider">Tinggal Sedikit</span>
+                                        @endif
+                                    </div>
                                 </div>
-                                @endif
-                            </div>
-                        </td>
+                            </td>
 
-                        <!-- Nama & Deskripsi -->
-                        <td class="px-4 py-3">
-                            <div class="font-medium text-gray-900 dark:text-white">{{ $product->name }}</div>
-                            @if($product->description)
-                            <div class="text-sm text-gray-600 dark:text-zinc-400 truncate max-w-xs">
-                                {{ $product->description }}
-                            </div>
-                            @endif
-                        </td>
+                            <!-- Price -->
+                            <td class="px-8 py-5 text-right">
+                                <span class="text-lg font-black text-pos-foreground font-sans">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                            </td>
 
-                        <!-- Kategori -->
-                        <td class="px-4 py-3">
-                            @if($product->category)
-                            <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full text-xs font-medium">
-                                {{ $product->category->name }}
-                            </span>
-                            @else
-                            <span class="text-gray-500 dark:text-zinc-500 italic text-sm">Tanpa Kategori</span>
-                            @endif
-                        </td>
+                            <!-- Stock Status -->
+                            <td class="px-8 py-5">
+                                <div class="flex flex-col items-center gap-1">
+                                    <div class="w-16 h-1.5 bg-pos-muted rounded-full overflow-hidden">
+                                        <div class="h-full {{ $product->stock > 10 ? 'bg-pos-success' : ($product->stock > 0 ? 'bg-pos-warning' : 'bg-pos-error') }}" 
+                                            style="width: {{ min(($product->stock / 20) * 100, 100) }}%"></div>
+                                    </div>
+                                    <span class="text-[11px] font-black {{ $product->stock > 10 ? 'text-pos-success' : ($product->stock > 0 ? 'text-pos-warning' : 'text-pos-error') }}">
+                                        {{ $product->stock }} <span class="uppercase opacity-60">Stok</span>
+                                    </span>
+                                </div>
+                            </td>
 
-                        <!-- Harga -->
-                        <td class="px-4 py-3 font-semibold text-emerald-600 dark:text-emerald-400 text-right">
-                            Rp {{ number_format($product->price, 0, ',', '.') }}
-                        </td>
-
-                        <!-- Stok (dengan warna status) -->
-                        <td class="px-4 py-3 text-center">
-                            @php
-                            $stock = $product->stock;
-                            if ($stock > 10) {
-                            $badgeClass = 'bg-emerald-100 dark:bg-emerald-800/40 text-emerald-800 dark:text-emerald-300';
-                            } elseif ($stock > 0) {
-                            $badgeClass = 'bg-yellow-100 dark:bg-yellow-800/40 text-yellow-800 dark:text-yellow-300';
-                            } else {
-                            $badgeClass = 'bg-red-100 dark:bg-red-800/40 text-red-800 dark:text-red-300';
-                            }
-                            @endphp
-                            <span class="px-2 py-1 rounded-full text-xs {{ $badgeClass }}">
-                                {{ $stock }}
-                            </span>
-                        </td>
-
-                        <!-- Aksi -->
-                        <td class="px-4 py-3">
-                            <div class="flex gap-2 justify-end">
-                                <flux:button
-                                    variant="primary"
-                                    icon="pencil-square"
-                                    href="{{ route('products.edit', $product) }}"
-                                    size="sm">
-                                    Edit
-                                </flux:button>
-
-                                <flux:button
-                                    variant="danger"
-                                    icon="trash"
-                                    wire:click="confirmDelete({{ $product->id }})"
-                                    size="sm">
-                                    Hapus
-                                </flux:button>
-                            </div>
-                        </td>
-                    </tr>
+                            <!-- Actions -->
+                            <td class="px-8 py-5">
+                                <div class="flex items-center justify-end gap-2">
+                                    <a href="{{ route('products.edit', $product) }}" 
+                                        class="size-11 flex items-center justify-center rounded-xl bg-pos-muted dark:bg-pos-muted/20 text-pos-secondary hover:bg-primary-blue hover:text-white hover:shadow-lg hover:shadow-primary-blue/20 transition-all group/btn" 
+                                        wire:navigate>
+                                        <i data-lucide="edit-3" class="size-5"></i>
+                                    </a>
+                                    <button wire:click="confirmDelete({{ $product->id }})" 
+                                        class="size-11 flex items-center justify-center rounded-xl bg-pos-muted dark:bg-pos-muted/20 text-pos-secondary hover:bg-pos-error hover:text-white hover:shadow-lg hover:shadow-pos-error/20 transition-all">
+                                        <i data-lucide="trash-2" class="size-5"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
                     @empty
-                    <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-gray-500 dark:text-zinc-500">
-                            <div class="flex flex-col items-center justify-center gap-2">
-                                <svg class="w-8 h-8 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                                </svg>
-                                <span>Belum ada produk. Cobalah menambahkan produk baru.</span>
-                            </div>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td colspan="5" class="px-8 py-20 text-center text-pos-secondary/30">
+                                <div class="flex flex-col items-center gap-4">
+                                    <div class="size-20 bg-pos-muted rounded-full flex items-center justify-center">
+                                        <i data-lucide="package-search" class="size-10"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-lg font-black text-pos-foreground/50">Produk Tidak Ditemukan</p>
+                                        <p class="text-sm font-medium">Coba gunakan kata kunci lain atau tambah produk baru</p>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>
@@ -158,68 +142,39 @@
 
         <!-- Pagination -->
         @if($products->hasPages())
-        <div class="p-4 bg-gray-50 dark:bg-zinc-800 border-t border-gray-200 dark:border-zinc-700 transition-colors duration-200">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-3">
-                <p class="text-sm text-gray-600 dark:text-zinc-400">
-                    Menampilkan
-                    <span class="font-medium text-gray-900 dark:text-white">{{ $products->firstItem() }}</span>
-                    –
-                    <span class="font-medium text-gray-900 dark:text-white">{{ $products->lastItem() }}</span>
-                    dari
-                    <span class="font-semibold text-emerald-600 dark:text-emerald-400">{{ $products->total() }}</span>
-                    data
+            <div class="px-8 py-6 bg-pos-card-grey/30 dark:bg-pos-muted/10 border-t border-pos-border dark:border-zinc-800 flex flex-col md:flex-row items-center justify-between gap-6">
+                <p class="text-xs font-bold text-pos-secondary uppercase tracking-widest">
+                    Menampilkan <span class="text-pos-foreground">{{ $products->firstItem() }}-{{ $products->lastItem() }}</span> dari <span class="text-primary-blue">{{ $products->total() }}</span> Katalog
                 </p>
-
-                <div class="[&>nav]:flex [&>nav]:items-center [&>nav]:gap-1">
-                    {{ $products->links('components.pagination.simple-arrows') }}
-                </div>
+                {{ $products->links('components.pagination.premium') }}
             </div>
-        </div>
         @endif
     </div>
 
-    <!-- Modal Konfirmasi Hapus Produk -->
+    <!-- Modal Konfirmasi Hapus -->
     @if($confirmingProductDeletion)
-    <div
-        class="fixed inset-0 z-[60] overflow-y-auto"
-        aria-labelledby="modal-title"
-        role="dialog"
-        aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <!-- Background overlay -->
-            <div class="fixed inset-0 bg-black/50" wire:click="$set('confirmingProductDeletion', false)"></div>
-
-            <!-- Modal panel -->
-            <div class="relative bg-white dark:bg-zinc-800 rounded-lg p-6 w-full max-w-sm z-[70]">
-                <div class="text-center">
-                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
-                        <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                        Hapus Produk
-                    </h3>
-                    <p class="text-gray-500 dark:text-zinc-400 mb-6">
-                        Apakah Anda yakin ingin menghapus produk ini? Tindakan ini tidak dapat dibatalkan.
-                    </p>
-                    <div class="flex justify-center gap-3">
-                        <flux:button
-                            wire:click="$set('confirmingProductDeletion', false)"
-                            variant="primary"
-                            class="px-4">
-                            Batal
-                        </flux:button>
-                        <flux:button
-                            wire:click="delete({{ $productIdToDelete }})"
-                            variant="danger"
-                            class="px-4">
-                            Ya, Hapus
-                        </flux:button>
-                    </div>
+        <div class="fixed inset-0 z-[999] flex items-center justify-center p-4">
+            <div class="fixed inset-0 bg-black/50 backdrop-blur-md" wire:click="$set('confirmingProductDeletion', false)"></div>
+            <div class="relative bg-white dark:bg-pos-card-grey rounded-[32px] w-full max-w-sm p-8 text-center shadow-2xl animate-peek border border-pos-border dark:border-zinc-800">
+                <div class="size-20 bg-pos-error/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="alert-octagon" class="size-10 text-pos-error"></i>
+                </div>
+                <h3 class="text-2xl font-black text-pos-foreground mb-3 tracking-tight">Hapus Produk?</h3>
+                <p class="text-pos-secondary text-sm font-medium mb-8 leading-relaxed">Tindakan ini akan menghapus data <span class="text-pos-error font-bold">secara permanen</span> dari katalog dan sistem inventaris Anda.</p>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <button wire:click="$set('confirmingProductDeletion', false)" class="py-4 bg-pos-muted text-pos-foreground rounded-2xl font-extrabold text-sm hover:bg-pos-border transition-all">Batal</button>
+                    <button wire:click="delete({{ $productIdToDelete }})" class="py-4 bg-pos-error text-white rounded-2xl font-extrabold text-sm hover:bg-pos-error/90 transition-all shadow-lg shadow-pos-error/20">Ya, Hapus</button>
                 </div>
             </div>
         </div>
-    </div>
     @endif
+
+    <style>
+        .animate-peek { animation: peek 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        @keyframes peek {
+            0% { transform: scale(0.9) translateY(20px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+    </style>
 </div>

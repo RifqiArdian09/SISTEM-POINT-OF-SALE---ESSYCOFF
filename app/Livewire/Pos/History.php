@@ -17,6 +17,7 @@ class History extends Component
     public string $selectedTableId = '';
     public string $status = 'all'; // all | pending_payment | paid
     public bool $showPaymentModal = false;
+    public bool $showReceiptModal = false;
     public $selectedOrder = null;
     public $uangDibayar = '';
     public string $paymentMethod = 'cash'; // cash, qris, card
@@ -138,13 +139,25 @@ class History extends Component
         $this->resetErrorBag();
 
         // Flash message dan trigger cetak
-        session()->flash('message', 'Pembayaran berhasil! Struk akan dicetak.');
+        session()->flash('message', 'Pembayaran berhasil! Struk siap dicetak.');
         $this->dispatch('toast', [
             'type' => 'success',
             'title' => 'Berhasil',
-            'message' => 'Pembayaran berhasil! Struk akan dicetak.',
+            'message' => 'Pembayaran berhasil! Struk siap dicetak.',
             'timeout' => 3000,
         ]);
+        
+        $this->showReceiptModal = true;
+    }
+
+    public function closeReceiptModal()
+    {
+        $this->showReceiptModal = false;
+        $this->selectedOrder = null;
+    }
+
+    public function printReceipt()
+    {
         $this->dispatch('printReceipt');
     }
 

@@ -1,118 +1,68 @@
-<div class="livewire-customer-home">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'coffee-dark': '#2A1A0A',
-                        'coffee-medium': '#3E2813',
-                        'coffee-light': '#523728',
-                        'coffee-gold': '#D4A76A',
-                        'coffee-cream': '#F5F5F5',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap');
+<div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary-blue via-pos-card-grey to-pos-muted dark:from-pos-card-grey dark:via-pos-muted dark:to-black relative overflow-hidden" x-data x-init="if (window.lucide) lucide.createIcons()">
+    <!-- Animated Background Elements -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-primary-blue/10 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-pos-success/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+    </div>
 
-        html, body {
-            max-width: 100%;
-            overflow-x: hidden;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(rgba(42, 26, 10, 0.7), rgba(42, 26, 10, 0.8)), url('/images/coffee-shop-bg.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-        }
-
-        .logo-text {
-            font-family: 'Playfair Display', serif;
-            font-weight: 700;
-            background: linear-gradient(135deg, #D4A76A 0%, #BF8B45 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .content-overlay {
-            backdrop-filter: blur(2px);
-            background: rgba(42, 26, 10, 0.3);
-            border-radius: 20px;
-            border: 1px solid rgba(212, 167, 106, 0.2);
-        }
-
-        .feature-card {
-            backdrop-filter: blur(10px);
-            background: rgba(62, 40, 19, 0.8);
-            border: 1px solid rgba(212, 167, 106, 0.3);
-        }
-
-        .livewire-customer-home {
-            overflow-x: hidden;
-        }
-
-        img, svg {
-            max-width: 100%;
-            height: auto;
-        }
-    </style>
-    <div class="min-h-screen flex items-center justify-center pt-6 px-4 sm:px-6 md:px-8">
-        <div class="w-full max-w-4xl mx-auto text-center flex flex-col justify-between min-h-[90vh] py-8 px-2 sm:px-4 md:px-0">
+    <div class="relative w-full max-w-5xl mx-auto text-center space-y-12 animate-fade-in">
+        <!-- Logo & Brand -->
+        <div class="flex flex-col items-center gap-6">
+            <div class="size-24 bg-white dark:bg-pos-card-grey rounded-[32px] flex items-center justify-center shadow-2xl shadow-primary-blue/20 border-4 border-white dark:border-zinc-800 animate-peek">
+                <img src="{{ asset('images/logo2.png') }}" alt="EssyCoff Logo" class="w-16 h-16 rounded-2xl">
+            </div>
             <div>
-                <div class="mb-6" data-aos="zoom-in" data-aos-duration="1000">
-                    <i class="fas fa-mug-hot text-7xl text-coffee-gold"></i>
-                </div>
-                <h1 class="text-4xl md:text-5xl font-bold text-coffee-cream mb-6 leading-tight" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
-                    Selamat Datang di <span class="logo-text">EssyCoff</span>
+                <h1 class="text-5xl md:text-7xl font-black text-white tracking-tight mb-4">
+                    Selamat Datang di <span class="text-primary-blue">EssyCoff</span>
                 </h1>
-
-                <p class="text-lg md:text-xl text-coffee-gold mb-10 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="400" data-aos-duration="1000">
-                    Temukan kenikmatan kopi terbaik dengan cara yang mudah.
+                <p class="text-xl md:text-2xl text-white/80 font-medium max-w-2xl mx-auto">
+                    Nikmati pengalaman memesan kopi premium dengan mudah dan cepat
                 </p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-                    <div class="feature-card p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300" data-aos="fade-right" data-aos-delay="600" data-aos-duration="800">
-                        <i class="fas fa-coffee text-coffee-gold text-2xl mb-3"></i>
-                        <h3 class="text-coffee-gold font-semibold text-lg mb-2">Kopi Premium</h3>
-                        <p class="text-coffee-cream text-sm opacity-90">Biji pilihan terbaik dengan racikan khusus barista kami</p>
-                    </div>
-                    <div class="feature-card p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300" data-aos="fade-left" data-aos-delay="800" data-aos-duration="800">
-                        <i class="fas fa-bolt text-coffee-gold text-2xl mb-3"></i>
-                        <h3 class="text-coffee-gold font-semibold text-lg mb-2">Pesan Cepat</h3>
-                        <p class="text-coffee-cream text-sm opacity-90">Tanpa antri, cukup pesan dari genggaman tangan</p>
-                    </div>
-
-                </div>
-
-                <div class="text-center mt-8">
-                    <a href="{{ route('customer') }}"
-                        class="feature-card rounded-lg w-full max-w-sm mx-auto px-8 py-4
-                            bg-[#3E2813] relative z-10 ring-1 ring-[#D4A76A]/50 border border-[#D4A76A]/30
-                            hover:shadow-2xl transition-all duration-300 block
-                            text-coffee-gold font-bold text-lg text-center">
-                        <i class="fas fa-shopping-cart mr-2"></i>Mulai Pesanan <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
             </div>
         </div>
 
-        <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-        <script>
-            AOS.init({
-                duration: 800,
-                easing: 'ease-in-out',
-                once: true,
-                mirror: false,
-                offset: 100
-            });
-        </script>
+        <!-- Features Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <!-- Feature 1 -->
+            <div class="bg-white/10 dark:bg-pos-card-grey/50 backdrop-blur-xl rounded-[32px] p-8 border border-white/20 dark:border-zinc-800 hover:scale-105 transition-transform duration-300">
+                <div class="size-16 bg-primary-blue/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="coffee" class="size-8 text-primary-blue"></i>
+                </div>
+                <h3 class="text-xl font-black text-white mb-2">Kopi Premium</h3>
+                <p class="text-white/70 text-sm">Biji pilihan terbaik dengan racikan khusus barista kami</p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="bg-white/10 dark:bg-pos-card-grey/50 backdrop-blur-xl rounded-[32px] p-8 border border-white/20 dark:border-zinc-800 hover:scale-105 transition-transform duration-300" style="transition-delay: 100ms;">
+                <div class="size-16 bg-pos-success/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="zap" class="size-8 text-pos-success"></i>
+                </div>
+                <h3 class="text-xl font-black text-white mb-2">Pesan Cepat</h3>
+                <p class="text-white/70 text-sm">Tanpa antri, cukup pesan dari genggaman tangan</p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="bg-white/10 dark:bg-pos-card-grey/50 backdrop-blur-xl rounded-[32px] p-8 border border-white/20 dark:border-zinc-800 hover:scale-105 transition-transform duration-300" style="transition-delay: 200ms;">
+                <div class="size-16 bg-pos-warning/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="star" class="size-8 text-pos-warning"></i>
+                </div>
+                <h3 class="text-xl font-black text-white mb-2">Kualitas Terjamin</h3>
+                <p class="text-white/70 text-sm">Setiap pesanan dibuat dengan standar kualitas tertinggi</p>
+            </div>
+        </div>
+
+        <!-- CTA Button -->
+        <div class="flex flex-col items-center gap-4">
+            <a href="{{ route('customer') }}" 
+                class="group inline-flex items-center gap-3 px-12 py-5 bg-primary-blue hover:bg-primary-blue/90 text-white rounded-[24px] font-black text-lg shadow-2xl shadow-primary-blue/30 hover:shadow-primary-blue/50 transition-all hover:scale-105">
+                <i data-lucide="shopping-cart" class="size-6"></i>
+                <span>Mulai Pesanan</span>
+                <i data-lucide="arrow-right" class="size-6 group-hover:translate-x-1 transition-transform"></i>
+            </a>
+            <p class="text-white/60 text-sm font-medium">
+                <i data-lucide="clock" class="size-4 inline mr-1"></i>
+                Buka setiap hari, 08:00 - 22:00
+            </p>
+        </div>
     </div>
 </div>

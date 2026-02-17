@@ -1,537 +1,292 @@
-<div class="p-6 space-y-8 bg-white dark:bg-zinc-800 min-h-screen text-gray-900 dark:text-white">
-    <!-- Judul -->
-    <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Detail Transaksi: {{ $order->no_order }}</h1>
-    </div>
-
-    <!-- Informasi Transaksi -->
-    <div class="bg-white dark:bg-zinc-900 p-5 rounded-lg shadow-lg border border-gray-200 dark:border-zinc-700">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Informasi Transaksi</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-                <p class="text-sm text-gray-600 dark:text-zinc-400">Tanggal</p>
-                <p class="font-medium text-gray-900 dark:text-white">{{ $order->created_at->format('d/m/Y H:i') }}</p>
+<div class="p-6 lg:p-10 space-y-10 bg-pos-muted min-h-screen font-sans">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+            <div class="flex items-center gap-2 mb-2">
+                <a href="{{ route('pos.history') }}" class="text-xs font-black text-pos-secondary hover:text-primary-blue uppercase tracking-widest transition-colors flex items-center gap-1" wire:navigate>
+                    <i data-lucide="arrow-left" class="size-3"></i>
+                    Kembali ke Riwayat
+                </a>
             </div>
-            <div>
-                <p class="text-sm text-gray-600 dark:text-zinc-400">Kasir</p>
-                <p class="font-medium text-gray-900 dark:text-white">{{ $order->user?->name ?? '-' }}</p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-600 dark:text-zinc-400">Status</p>
-                <p class="font-medium {{ $order->status === 'pending_payment' ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400' }}">{{ ucfirst(str_replace('_', ' ', $order->status)) }}</p>
-            </div>
-            <div class="md:col-span-3">
-                <p class="text-sm text-gray-600 dark:text-zinc-400">Meja</p>
-                @if($order->table)
-                <p class="font-medium text-gray-900 dark:text-white">{{ $order->table->name }} <span class="text-xs text-gray-500 dark:text-zinc-400">({{ $order->table->code }})</span></p>
-                @else
-                <p class="font-medium text-gray-400">-</p>
-                @endif
-            </div>
-        </div>
-    </div>
-
-    <!-- Daftar Produk -->
-    <div class="bg-white dark:bg-zinc-900 shadow rounded-lg overflow-hidden border border-gray-200 dark:border-zinc-700">
-        <div class="p-5 border-b border-gray-200 dark:border-zinc-700">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Daftar Produk</h2>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-700 dark:text-zinc-200">
-                <thead class="bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-zinc-100 uppercase text-xs font-semibold">
-                    <tr>
-                        <th class="px-4 py-3">Produk</th>
-                        <th class="px-4 py-3 text-center">Qty</th>
-                        <th class="px-4 py-3 text-right">Harga</th>
-                        <th class="px-4 py-3 text-right">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-zinc-700">
-                    @foreach($order->items as $item)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800 transition duration-100">
-                            <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">
-                                {{ $item->product?->name ?? 'Produk dihapus' }}
-                            </td>
-                            <td class="px-4 py-3 text-center text-gray-600 dark:text-zinc-300">{{ $item->qty }}</td>
-                            <td class="px-4 py-3 text-right text-gray-600 dark:text-zinc-300">
-                                Rp {{ number_format($item->harga, 0, ',', '.') }}
-                            </td>
-                            <td class="px-4 py-3 text-right font-semibold text-emerald-600 dark:text-emerald-400">
-                                Rp {{ number_format($item->subtotal, 0, ',', '.') }}
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Ringkasan Pembayaran -->
-    <div class="bg-white dark:bg-zinc-900 p-5 rounded-lg shadow-lg border border-gray-200 dark:border-zinc-700">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Ringkasan Pembayaran</h2>
-        <div class="space-y-3">
-            <div class="flex justify-between">
-                <span class="text-gray-600 dark:text-zinc-300">Total</span>
-                <span class="text-xl font-bold text-gray-900 dark:text-white">
-                    Rp {{ number_format($order->total, 0, ',', '.') }}
+            <h1 class="text-3xl lg:text-4xl font-black text-pos-foreground tracking-tight flex items-center gap-4">
+                {{ $order->no_order }}
+                <span class="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full 
+                    {{ $order->status === 'paid' ? 'bg-pos-success/10 text-pos-success border border-pos-success/20' : 'bg-pos-warning/10 text-pos-warning border border-pos-warning/20' }}">
+                    {{ $order->status === 'paid' ? 'Selesai' : 'Menunggu Pembayaran' }}
                 </span>
-            </div>
+            </h1>
+            <p class="text-pos-secondary font-medium mt-1">Dibuat oleh <span class="text-pos-foreground font-bold">{{ $order->user?->name ?? 'System' }}</span> pada {{ $order->created_at->translatedFormat('d F Y, H:i') }}</p>
+        </div>
 
-            <div class="flex justify-between pt-1 border-t border-gray-200 dark:border-zinc-700">
-                <span class="text-gray-600 dark:text-zinc-300">Metode</span>
-                <span class="font-medium text-gray-900 dark:text-white">
-                    {{ $order->status === 'pending_payment' ? '' : strtoupper($order->payment_method ?? '') }}
-                </span>
-            </div>
-
-            @if(($order->payment_method === 'qris') && $order->payment_ref)
-            <div class="flex justify-between">
-                <span class="text-gray-600 dark:text-zinc-300">Referensi</span>
-                <span class="font-medium text-gray-900 dark:text-white">{{ $order->payment_ref }}</span>
-            </div>
-            @endif
-
-            @if($order->payment_method === 'card' && $order->status !== 'pending_payment')
-            <div class="flex justify-between">
-                <span class="text-gray-600 dark:text-zinc-300">Kartu</span>
-                <span class="font-medium text-gray-900 dark:text-white">**** **** **** {{ $order->card_last4 }}</span>
-            </div>
-            @if($order->payment_ref)
-            <div class="flex justify-between">
-                <span class="text-gray-600 dark:text-zinc-300">Referensi</span>
-                <span class="font-medium text-gray-900 dark:text-white">{{ $order->payment_ref }}</span>
-            </div>
-            @endif
-            @endif
-
-            @if($order->uang_dibayar !== null && $order->status !== 'pending_payment')
-            <div class="flex justify-between">
-                <span class="text-gray-600 dark:text-zinc-300">{{ $order->payment_method === 'cash' ? 'Tunai' : 'Dibayar' }}</span>
-                <span class="font-semibold text-gray-900 dark:text-white">
-                    Rp {{ number_format($order->uang_dibayar, 0, ',', '.') }}
-                </span>
-            </div>
-            @endif
-
-            @if($order->kembalian !== null && $order->status !== 'pending_payment')
-                <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-zinc-300">Kembalian</span>
-                    <span class="font-semibold text-emerald-600 dark:text-emerald-400">
-                        Rp {{ number_format($order->kembalian, 0, ',', '.') }}
-                    </span>
-                </div>
+        <div class="flex items-center gap-3">
+            @if($order->status === 'paid')
+                <button wire:click="printReceipt" class="flex items-center gap-2 px-6 py-4 rounded-2xl bg-white dark:bg-zinc-800 border border-pos-border dark:border-zinc-700 text-pos-foreground font-bold text-sm hover:bg-pos-card-grey dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-sm">
+                    <i data-lucide="printer" class="size-5 text-pos-secondary"></i>
+                    <span>Cetak Struk</span>
+                </button>
+            @else
+                <button wire:click="openPaymentModal" class="flex items-center gap-3 px-8 py-4 rounded-2xl bg-primary-blue text-white font-bold text-sm hover:bg-primary-blue-hover shadow-xl shadow-primary-blue/20 transition-all active:scale-95">
+                    <i data-lucide="credit-card" class="size-5"></i>
+                    <span>Tuntaskan Pembayaran</span>
+                </button>
             @endif
         </div>
     </div>
 
-    <!-- Tombol Aksi -->
-    <div class="flex flex-wrap gap-3">
-       
-        <flux:button 
-            variant="outline" 
-            icon="arrow-left"
-            href="{{ route('pos.history') }}">
-            Kembali
-        </flux:button>
-        
-        @if($order->status === 'pending_payment')
-        <flux:button 
-            variant="primary" 
-            icon="credit-card"
-            wire:click="openPaymentModal">
-            Bayar
-        </flux:button>
-        @endif
-
-        @if($order->status === 'paid')
-        <!-- Tombol Cetak Ulang Struk -->
-        <flux:button 
-            variant="primary" 
-            icon="printer"
-            wire:click="printReceipt">
-            Cetak Ulang Struk
-        </flux:button>
-        @endif
-
-        @if($order->table && $order->table->status === 'unavailable')
-        <flux:button 
-            variant="outline" 
-            icon="check"
-            wire:click="markTableAvailable">
-            Tandai Meja Tersedia
-        </flux:button>
-        @endif
-    </div>
-
-    <!-- Modal Pembayaran -->
-    @if($showPaymentModal)
-    <div class="fixed inset-0 z-[70] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50" wire:click="closePaymentModal"></div>
-        <div class="relative bg-white dark:bg-zinc-800 rounded-lg p-6 w-full max-w-md z-[71] border border-gray-200 dark:border-zinc-700">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pembayaran</h3>
-            <!-- Info ringkas: No. Order, Customer, Total -->
-            <div class="mb-4 rounded-md border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-900 p-3 text-sm">
-                <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-zinc-300">No. Order</span>
-                    <span class="font-semibold text-gray-900 dark:text-white">{{ $order->no_order }}</span>
-                </div>
-                <div class="flex justify-between mt-1">
-                    <span class="text-gray-600 dark:text-zinc-300">Customer</span>
-                    <span class="font-medium text-gray-900 dark:text-white">{{ $order->customer_name ?? '-' }}</span>
-                </div>
-                <div class="flex justify-between mt-1">
-                    <span class="text-gray-600 dark:text-zinc-300">Total</span>
-                    <span class="font-bold text-gray-900 dark:text-white">Rp {{ number_format($order->total, 0, ',', '.') }}</span>
-                </div>
-            </div>
-
-            <div class="space-y-4">
-                @php
-                $total = (float) ($order->total ?? 0);
-                $rounded50k = ceil($total / 50000) * 50000;
-                $rounded100k = ceil($total / 100000) * 100000;
-                @endphp
-
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600 dark:text-zinc-300">Total</span>
-                    <span class="font-semibold text-gray-900 dark:text-white">Rp {{ number_format($order->total, 0, ',', '.') }}</span>
-                </div>
-
-                <!-- Metode Pembayaran -->
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">Metode</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button type="button" wire:click="$set('paymentMethod','cash')"
-                            class="px-3 py-2 rounded border text-sm transition
-                                {{ $paymentMethod === 'cash'
-                                    ? 'bg-emerald-600 text-white border-emerald-700 hover:bg-emerald-700'
-                                    : 'bg-gray-50 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700' }}">
-                            Cash
-                        </button>
-                        <button type="button" wire:click="$set('paymentMethod','qris')"
-                            class="px-3 py-2 rounded border text-sm transition
-                                {{ $paymentMethod === 'qris'
-                                    ? 'bg-blue-600 text-white border-blue-700 hover:bg-blue-700'
-                                    : 'bg-gray-50 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700' }}">
-                            QRIS
-                        </button>
-                        <button type="button" wire:click="$set('paymentMethod','card')"
-                            class="px-3 py-2 rounded border text-sm transition
-                                {{ $paymentMethod === 'card'
-                                    ? 'bg-purple-600 text-white border-purple-700 hover:bg-purple-700'
-                                    : 'bg-gray-50 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700' }}">
-                            Card
-                        </button>
-                    </div>
-                </div>
-
-                <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
-                    @if($paymentMethod === 'cash')
-                        Uang yang Dibayar
-                    @elseif($paymentMethod === 'qris')
-                        Referensi QRIS (opsional)
-                    @else
-                        Detail Kartu
-                    @endif
-                </label>
-
-                @php $minUang = (float) $order->total; @endphp
-
-                @if($paymentMethod === 'cash')
-                    <flux:input
-                        wire:model.live="uangDibayar"
-                        type="number"
-                        placeholder="15000"
-                        :min="$minUang"
-                        step="1"
-                        class="w-full" />
-                    @error('uangDibayar')
-                    <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
-                    @enderror
-
-                    <!-- Quick Amount Buttons -->
-                    <div class="grid grid-cols-3 gap-2 mt-2">
-                        <button
-                            type="button"
-                            wire:click="$set('uangDibayar', {{ $total }})"
-                            class="px-3 py-2 text-xs bg-gray-100 dark:bg-zinc-700 rounded hover:bg-gray-200 dark:hover:bg-zinc-600 transition text-gray-800 dark:text-zinc-300 font-medium">
-                            Pas
-                        </button>
-                        <button
-                            type="button"
-                            wire:click="$set('uangDibayar', {{ $rounded50k }})"
-                            class="px-3 py-2 text-xs bg-blue-100 dark:bg-blue-900/40 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition text-blue-800 dark:text-blue-300 font-medium">
-                            Rp {{ number_format($rounded50k, 0, ',', '.') }}
-                        </button>
-                        <button
-                            type="button"
-                            wire:click="$set('uangDibayar', {{ $rounded100k }})"
-                            class="px-3 py-2 text-xs bg-emerald-100 dark:bg-emerald-900/40 rounded hover:bg-emerald-200 dark:hover:bg-emerald-800 transition text-emerald-800 dark:text-emerald-300 font-medium">
-                            Rp {{ number_format($rounded100k, 0, ',', '.') }}
-                        </button>
-                    </div>
-                @elseif($paymentMethod === 'qris')
-                    <flux:input
-                        wire:model.live="paymentRef"
-                        type="text"
-                        placeholder="No. Referensi (opsional)"
-                        class="w-full" />
-                @else
-                    <div class="grid grid-cols-2 gap-3">
-                        <flux:input
-                            wire:model.live="cardLast4"
-                            type="text"
-                            placeholder="Last 4 Digit"
-                            maxlength="4"
-                            class="w-full" />
-                        <flux:input
-                            wire:model.live="paymentRef"
-                            type="text"
-                            placeholder="No. Referensi (opsional)"
-                            class="w-full" />
-                    </div>
-                    @error('cardLast4')
-                    <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
-                    @enderror
-                @endif
-
-                @php
-                $uangDibayarFloat = (float)($uangDibayar ?? 0);
-                $kembalian = $uangDibayarFloat - $total;
-                @endphp
-
-                @if($paymentMethod === 'cash' && $uangDibayarFloat >= $total)
-                <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-blue-700 dark:text-blue-300">Kembalian:</span>
-                        <span class="font-bold text-blue-700 dark:text-blue-300">
-                            Rp {{ number_format($kembalian, 0, ',', '.') }}
-                        </span>
-                    </div>
-                </div>
-                @endif
-            </div>
-
-            <div class="flex justify-end gap-2 mt-6">
-                <flux:button variant="outline" wire:click="closePaymentModal">Batal</flux:button>
-                <flux:button variant="primary" icon="check" wire:click="processPayment">Proses Pembayaran</flux:button>
-            </div>
+    @if (session()->has('message'))
+        <div class="bg-pos-success/10 border border-pos-success/20 p-4 rounded-2xl flex items-center gap-3 text-pos-success font-bold text-sm">
+            <i data-lucide="check-circle" class="size-5"></i>
+            {{ session('message') }}
         </div>
-    </div>
     @endif
 
-    @php
-    $width = $receiptWidth ?? '80mm'; // Default 80mm, bisa diubah jadi '58mm'
-    $fontSize = $width === '58mm' ? '10px' : '12px';
-    $padding = $width === '58mm' ? '8px' : '10px';
-    @endphp
-
-    <div
-        id="receipt-content"
-        class="hidden print:block bg-white text-black absolute left-0 top-0"
-        style="width: {{ $width }}; padding: {{ $padding }}; font-family: 'Courier New', monospace; font-size: {{ $fontSize }}; line-height: 1.3;">
-        <div class="receipt-layout space-y-1">
-            <!-- Header -->
-            <div class="text-center mb-2">
-                <h2 class="font-bold text-lg" style="font-size: {{ $width === '58mm' ? '14px' : '16px' }}; margin-bottom: 4px;">
-                    EssyCoff
-                </h2>
-                <p class="text-[9px] leading-tight">Jl. Jati No.41, Padang Jati, Kota Bengkulu</p>
-                <p class="text-[9px]">Telp: (0736) 1234567</p>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+         <!-- Left: Summary Info -->
+        <div class="space-y-8">
+            <!-- Payment Info -->
+            <div class="bg-white dark:bg-pos-card-grey rounded-[40px] p-8 border border-pos-border dark:border-zinc-800 shadow-sm">
+                <h3 class="text-lg font-black text-pos-foreground tracking-tight mb-6">Ringkasan Pembayaran</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between items-end">
+                        <span class="text-[10px] font-black text-pos-secondary uppercase tracking-widest">Total Tagihan</span>
+                        <span class="text-2xl font-black text-pos-foreground">Rp {{ number_format($order->total, 0, ',', '.') }}</span>
+                    </div>
+                    
+                    @if($order->status === 'paid')
+                        <div class="h-px bg-pos-border my-2"></div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-bold text-pos-secondary">Metode</span>
+                            <span class="font-black text-pos-foreground uppercase tracking-widest">{{ $order->payment_method }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-bold text-pos-secondary">Uang Tunai</span>
+                            <span class="font-black text-pos-foreground">Rp {{ number_format($order->uang_dibayar, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-bold text-pos-secondary">Kembalian</span>
+                            <span class="font-black text-pos-success">Rp {{ number_format($order->kembalian, 0, ',', '.') }}</span>
+                        </div>
+                    @endif
+                </div>
             </div>
 
-            <hr class="my-1 border-dashed border-black" style="border-top: 1px dashed #000; margin: 4px 0;">
-
-            <!-- Order Info -->
-            <div class="space-y-0.5 mb-2 text-[9px]">
-                <div class="flex justify-between">
-                    <span class="font-medium">No. order:</span>
-                    <span>{{ $order->no_order }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="font-medium">Kasir:</span>
-                    <span>{{ $order->user?->name ?? 'System' }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="font-medium">Tanggal:</span>
-                    <span>{{ $order->created_at->format('d/m/Y H:i') }}</span>
-                </div>
-                @if($order->table)
-                <div class="flex justify-between">
-                    <span class="font-medium">Meja:</span>
-                    <span>{{ $order->table->name }} ({{ $order->table->code }})</span>
-                </div>
-                @endif
-            </div>
-
-            <hr class="my-1 border-dashed border-black" style="border-top: 1px dashed #000; margin: 4px 0;">
-
-            <!-- Items -->
-            <div class="space-y-1 mb-2">
-                @foreach($order->items as $item)
-                <div class="flex justify-between text-[9px]" style="font-size: {{ $width === '58mm' ? '8px' : '10px' }};">
-                    <div>
-                        <span class="font-medium">{{ $item->product?->name ?? 'Produk dihapus' }}</span>
-                        <div class="text-[8px] text-gray-600">
-                            {{ $item->quantity ?? $item->qty }} × Rp {{ number_format($item->harga ?? $item->price, 0, ',', '.') }}
+             <!-- Table Info -->
+            @if($order->table)
+                <div class="bg-white dark:bg-pos-card-grey rounded-[40px] p-8 border border-pos-border dark:border-zinc-800 shadow-sm relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 opacity-5">
+                        <i data-lucide="armchair" class="size-32"></i>
+                    </div>
+                     <h3 class="text-lg font-black text-pos-foreground tracking-tight mb-6">Informasi Meja</h3>
+                    <div class="flex items-center gap-4">
+                        <div class="size-16 rounded-2xl bg-pos-muted dark:bg-pos-muted/20 flex items-center justify-center text-pos-foreground">
+                            <span class="text-2xl font-black">{{ $order->table->code }}</span>
+                        </div>
+                        <div>
+                            <p class="font-black text-pos-foreground">{{ $order->table->name }}</p>
+                            <p class="text-xs font-bold text-pos-secondary uppercase tracking-widest">Lokasi Meja</p>
                         </div>
                     </div>
-                    <div class="text-right">
-                        <div>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</div>
-                        @if($item->note)
-                        <div class="text-[7px] italic">Catatan: {{ $item->note }}</div>
-                        @endif
+
+                     @if($order->table->status === 'unavailable')
+                        <button wire:click="markTableAvailable" class="w-full mt-6 py-4 rounded-2xl bg-pos-muted dark:bg-pos-muted/20 text-pos-foreground font-black text-sm uppercase tracking-widest hover:bg-pos-border dark:hover:bg-pos-muted transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="check" class="size-4"></i>
+                            <span>Tandai Tersedia</span>
+                        </button>
+                    @endif
+                </div>
+            @endif
+
+             <!-- Log Info -->
+            <div class="bg-pos-card-grey/50 dark:bg-pos-muted/10 p-6 rounded-[32px] border border-pos-border dark:border-zinc-800 space-y-4">
+                <div class="flex gap-4">
+                    <div class="size-10 rounded-xl bg-white dark:bg-pos-card-grey flex items-center justify-center text-pos-secondary shrink-0 shadow-sm">
+                        <i data-lucide="user" class="size-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-pos-secondary uppercase tracking-widest mb-1">Nama Customer</p>
+                        <p class="text-sm font-black text-pos-foreground capitalize">{{ $order->customer_name ?? 'Guest' }}</p>
                     </div>
                 </div>
-                @endforeach
-            </div>
-
-            <hr class="my-1 border-dashed border-black" style="border-top: 1px dashed #000; margin: 4px 0;">
-
-            <!-- Summary -->
-            <div class="space-y-0.5 font-semibold text-[9px]">
-                <div class="flex justify-between">
-                    <span>Subtotal</span>
-                    <span>Rp {{ number_format($order->total, 0, ',', '.') }}</span>
-                </div>
-                @if($order->discount > 0)
-                <div class="flex justify-between">
-                    <span>Diskon</span>
-                    <span class="text-red-600">- Rp {{ number_format($order->discount, 0, ',', '.') }}</span>
-                </div>
-                @endif
-                @if($order->tax > 0)
-                <div class="flex justify-between">
-                    <span>Pajak ({{ $order->tax }}%)</span>
-                    <span>Rp {{ number_format(($order->total * $order->tax) / 100, 0, ',', '.') }}</span>
-                </div>
-                @endif
-                @if($order->service_charge > 0)
-                <div class="flex justify-between">
-                    <span>Service Charge ({{ $order->service_charge }}%)</span>
-                    <span>Rp {{ number_format(($order->total * $order->service_charge) / 100, 0, ',', '.') }}</span>
-                </div>
-                @endif
-                <div class="flex justify-between font-bold pt-1 mt-1 border-t border-black" style="font-size: {{ $width === '58mm' ? '10px' : '12px' }};">
-                    <span>Total</span>
-                    <span>Rp {{ number_format($order->grand_total ?? $order->total, 0, ',', '.') }}</span>
-                </div>
-
-                <div class="flex justify-between pt-1 border-t border-black mt-1">
-                    <span>Metode</span>
-                    <span>{{ strtoupper($order->payment_method ?? 'CASH') }}</span>
-                </div>
-                @if($order->payment_method === 'qris' && $order->payment_ref)
-                <div class="flex justify-between">
-                    <span>Referensi</span>
-                    <span>{{ $order->payment_ref }}</span>
-                </div>
-                @endif
-                @if($order->payment_method === 'card')
-                <div class="flex justify-between">
-                    <span>Kartu</span>
-                    <span>**** **** **** {{ $order->card_last4 }}</span>
-                </div>
-                @if($order->payment_ref)
-                <div class="flex justify-between">
-                    <span>Referensi</span>
-                    <span>{{ $order->payment_ref }}</span>
-                </div>
-                @endif
-                @endif
-                @if($order->uang_dibayar !== null)
-                <div class="flex justify-between">
-                    <span>{{ $order->payment_method === 'cash' ? 'Tunai' : 'Dibayar' }}</span>
-                    <span>Rp {{ number_format($order->uang_dibayar, 0, ',', '.') }}</span>
-                </div>
-                @endif
-                {{-- Selalu tampilkan kembalian, meskipun 0 --}}
-                <div class="flex justify-between">
-                    <span>Kembali</span>
-                    <span>Rp {{ number_format($order->kembalian ?? 0, 0, ',', '.') }}</span>
+                <div class="flex gap-4">
+                    <div class="size-10 rounded-xl bg-white dark:bg-pos-card-grey flex items-center justify-center text-pos-secondary shrink-0 shadow-sm">
+                        <i data-lucide="clock" class="size-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-pos-secondary uppercase tracking-widest mb-1">Durasi Pesanan</p>
+                        <p class="text-sm font-black text-pos-foreground">{{ $order->created_at->diffForHumans() }}</p>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Footer -->
-            <div class="text-center mt-3 text-[8px] text-gray-600">
-                <p>Terima kasih atas kunjungan Anda</p>
-                <p class="mt-0.5">~ EssyCoff ~</p>
-                <p class="mt-1 text-[7px]">*Struk ini sebagai bukti pembayaran yang sah</p>
+         <!-- Right: Order Items -->
+        <div class="lg:col-span-2 space-y-8">
+            <div class="bg-white dark:bg-pos-card-grey rounded-[40px] border border-pos-border dark:border-zinc-800 shadow-sm overflow-hidden">
+                <div class="p-8 border-b border-pos-border dark:border-zinc-800 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-black text-pos-foreground tracking-tight">Daftar Item</h3>
+                        <p class="text-xs text-pos-secondary font-bold uppercase tracking-widest mt-1">Total {{ $order->items->count() }} item dipesan</p>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-pos-card-grey/30 dark:bg-pos-muted/10">
+                            <tr>
+                                <th class="px-8 py-5 text-[10px] font-black text-pos-secondary uppercase tracking-widest">Produk</th>
+                                <th class="px-8 py-5 text-[10px] font-black text-pos-secondary uppercase tracking-widest text-center">Qty</th>
+                                <th class="px-8 py-5 text-[10px] font-black text-pos-secondary uppercase tracking-widest text-right">Harga</th>
+                                <th class="px-8 py-5 text-[10px] font-black text-pos-secondary uppercase tracking-widest text-right">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-pos-border dark:divide-zinc-800">
+                            @foreach($order->items as $item)
+                                <tr class="group">
+                                    <td class="px-8 py-6">
+                                        <div class="flex items-center gap-4">
+                                            <div class="size-14 rounded-2xl overflow-hidden bg-pos-muted dark:bg-pos-muted/20 border border-pos-border dark:border-zinc-800 shrink-0">
+                                                @if($item->product?->image_url)
+                                                    <img src="{{ $item->product->image_url }}" class="w-full h-full object-cover">
+                                                @else
+                                                    <div class="w-full h-full flex items-center justify-center text-pos-secondary/20">
+                                                        <i data-lucide="image" class="size-6"></i>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <div>
+                                                <p class="font-black text-pos-foreground group-hover:text-primary-blue transition-colors text-sm capitalize">{{ $item->product?->name ?? 'Produk dihapus' }}</p>
+                                                <p class="text-[10px] font-black text-primary-blue/60 uppercase tracking-widest">{{ $item->product?->category?->name }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-8 py-6 text-center">
+                                        <span class="inline-flex size-10 items-center justify-center rounded-xl bg-pos-muted dark:bg-pos-muted/20 text-pos-foreground font-black text-sm">
+                                            {{ $item->qty }}
+                                        </span>
+                                    </td>
+                                    <td class="px-8 py-6 text-right">
+                                        <span class="text-sm font-bold text-pos-secondary">Rp {{ number_format($item->harga, 0, ',', '.') }}</span>
+                                    </td>
+                                    <td class="px-8 py-6 text-right">
+                                        <span class="text-base font-black text-pos-foreground">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-pos-muted/20 dark:bg-pos-muted/5">
+                                <td colspan="3" class="px-8 py-6 text-right font-black text-pos-secondary uppercase tracking-widest text-xs">Total Pembayaran</td>
+                                <td class="px-8 py-6 text-right font-black text-xl text-primary-blue">Rp {{ number_format($order->total, 0, ',', '.') }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
+            
+            @if($order->status === 'pending_payment')
+                <div class="p-8 bg-pos-warning/10 rounded-[40px] border border-pos-warning/20 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex items-center gap-4 text-pos-warning">
+                        <div class="size-12 rounded-2xl bg-white flex items-center justify-center shadow-sm">
+                            <i data-lucide="alert-circle" class="size-6"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-sm uppercase tracking-widest">Menunggu Pelunasan</h4>
+                            <p class="text-[11px] font-medium text-pos-warning/80">Pesanan ini belum dibayar. Mohon tanyakan customer sebelum menutup kasir.</p>
+                        </div>
+                    </div>
+                    <button wire:click="openPaymentModal" class="px-8 py-4 rounded-2xl bg-pos-warning text-white font-black text-xs uppercase tracking-widest hover:bg-pos-warning/80 shadow-lg shadow-pos-warning/10 transition-all">
+                        Proses Pembayaran
+                    </button>
+                </div>
+            @endif
         </div>
     </div>
 
-    <!-- ✅ CSS Print untuk 58mm & 80mm -->
+    <!-- Modal Pembayaran (Same as index but matching current design) -->
+    @if($showPaymentModal)
+         <div class="fixed inset-0 z-[999] flex items-center justify-center p-4">
+            <div class="fixed inset-0 bg-black/50 backdrop-blur-md" wire:click="closePaymentModal"></div>
+            <div class="relative bg-white dark:bg-pos-card-grey rounded-[40px] w-full max-w-md p-10 shadow-2xl animate-peek border border-pos-border dark:border-zinc-800">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-2xl font-black text-pos-foreground tracking-tight">Selesaikan Pembayaran</h3>
+                        <p class="text-pos-secondary text-sm font-medium mt-1">Total Tagihan: <span class="text-primary-blue font-bold">Rp {{ number_format($order->total, 0, ',', '.') }}</span></p>
+                    </div>
+                    <button wire:click="closePaymentModal" class="size-10 rounded-full bg-pos-muted dark:bg-pos-muted/20 flex items-center justify-center text-pos-secondary hover:text-pos-error transition-colors">
+                        <i data-lucide="x" class="size-5"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-8">
+                    <!-- Method Selector -->
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-black text-pos-secondary uppercase tracking-widest px-1">Metode Pembayaran</label>
+                        <div class="grid grid-cols-3 gap-4">
+                            @foreach(['cash' => 'Coins', 'qris' => 'Qr-code', 'card' => 'Credit-card'] as $key => $icon)
+                                <button wire:click="$set('paymentMethod', '{{ $key }}')" 
+                                    class="flex flex-col items-center gap-2 p-5 rounded-3xl border-2 transition-all {{ $paymentMethod === $key ? 'border-primary-blue bg-primary-blue/5 text-primary-blue' : 'border-pos-border dark:border-zinc-700 bg-pos-muted/20 dark:bg-pos-muted/10 text-pos-secondary hover:border-pos-secondary/30' }}">
+                                    <i data-lucide="{{ $icon }}" class="size-6"></i>
+                                    <span class="text-[10px] font-black uppercase tracking-widest">{{ $key }}</span>
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    @if($paymentMethod === 'cash')
+                        <div class="space-y-3">
+                            <label class="text-[10px] font-black text-pos-secondary uppercase tracking-widest px-1">Uang yang Dibayar</label>
+                            <div class="relative">
+                                <span class="absolute left-6 top-1/2 -translate-y-1/2 font-black text-pos-foreground text-lg">Rp</span>
+                                <input type="number" wire:model.live="uangDibayar" class="w-full h-20 pl-16 pr-6 rounded-3xl bg-pos-muted dark:bg-pos-muted/20 border-none font-black text-2xl text-pos-foreground outline-none focus:ring-4 focus:ring-primary-blue/10">
+                            </div>
+                            @error('uangDibayar') <span class="text-xs font-bold text-pos-error px-1">{{ $message }}</span> @enderror
+                        </div>
+                    @elseif($paymentMethod === 'card')
+                        <div class="space-y-3">
+                            <label class="text-[10px] font-black text-pos-secondary uppercase tracking-widest px-1">4 Digit Terakhir Kartu</label>
+                            <input type="text" wire:model.live="cardLast4" maxlength="4" class="w-full h-14 px-6 rounded-2xl bg-pos-muted dark:bg-pos-muted/20 border-none font-black text-lg text-pos-foreground outline-none focus:ring-2 focus:ring-primary-blue/20" placeholder="0000">
+                            @error('cardLast4') <span class="text-xs font-bold text-pos-error px-1">{{ $message }}</span> @enderror
+                        </div>
+                    @endif
+
+                    @php
+                        $total = (float)($order->total ?? 0);
+                        $dibayar = (float)($uangDibayar ?: 0);
+                        $kembali = max(0, $dibayar - $total);
+                    @endphp
+
+                    @if($paymentMethod === 'cash' && $dibayar >= $total)
+                        <div class="p-6 bg-pos-success/5 rounded-3xl border border-pos-success/20 flex items-center justify-between">
+                            <span class="text-sm font-black text-pos-success uppercase tracking-widest">Uang Kembalian</span>
+                            <span class="text-2xl font-black text-pos-success">Rp {{ number_format($kembali, 0, ',', '.') }}</span>
+                        </div>
+                    @endif
+
+                    <button wire:click="processPayment" class="w-full h-16 rounded-3xl bg-primary-blue text-white font-black text-sm uppercase tracking-widest hover:bg-primary-blue-hover shadow-2xl shadow-primary-blue/30 transition-all active:scale-95 flex items-center justify-center gap-3">
+                        <i data-lucide="shield-check" class="size-5"></i>
+                        <span>Konfirmasi Pembayaran</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Receipt Print Layout (Invisible in screen, visible in print) -->
+    @include('livewire.pos.partials.receipt-print', ['order' => $order])
+
     <style>
-        @media print {
-            @page {
-                margin: 0;
-                padding: 0;
-            }
-
-            /* Sembunyikan semua elemen */
-            body * {
-                visibility: hidden;
-            }
-
-            /* Tampilkan hanya struk */
-            #receipt-content,
-            #receipt-content * {
-                visibility: visible;
-            }
-
-            /* Atur ukuran dan gaya struk */
-            #receipt-content {
-                position: absolute !important;
-                top: 0 !important;
-                left: 50% !important;
-                transform: translateX(-50%) !important;
-                /* biar rata tengah */
-                margin: 0 auto !important;
-                box-shadow: none !important;
-                border: none !important;
-                border-radius: 0 !important;
-                background: white !important;
-                color: black !important;
-                page-break-after: always;
-                width: 58mm !important;
-                /* ubah jadi 58mm biar kecil */
-                padding: 6px !important;
-                /* padding lebih kecil */
-                font-size: 10px !important;
-                /* font ikut kecil */
-            }
-
-
-            /* Reset gaya dalam struk */
-            #receipt-content * {
-                box-sizing: border-box;
-                margin: 0;
-                padding: 0;
-                border: none;
-                background: transparent;
-                color: black !important;
-                text-decoration: none;
-                float: none;
-                page-break-inside: avoid;
-            }
-
-            /* Gaya khusus untuk print */
-            .receipt-layout hr {
-                border: none !important;
-                border-top: 1px dashed #000 !important;
-            }
+        .animate-peek { animation: peek 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        @keyframes peek {
+            0% { transform: scale(0.9) translateY(20px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
         }
     </style>
 
-    <!-- ✅ Script Print dengan Delay -->
     <script>
         document.addEventListener('livewire:init', () => {
             Livewire.on('printReceipt', () => {
-                window.scrollTo(0, 0);
-                setTimeout(() => {
-                    window.print();
-                }, 500); // Delay agar Livewire selesai render
+                setTimeout(() => { window.print(); }, 300);
             });
         });
     </script>

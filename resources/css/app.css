@@ -9,7 +9,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Lexend Deca', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
@@ -26,6 +26,22 @@
     --color-accent: var(--color-neutral-800);
     --color-accent-content: var(--color-neutral-800);
     --color-accent-foreground: var(--color-white);
+
+    /* POS Premium Theme */
+    --color-primary-blue: #165DFF;
+    --color-primary-blue-hover: #0E4BD9;
+    --color-pos-foreground: #080C1A;
+    --color-pos-secondary: #6A7686;
+    --color-pos-muted: #EFF2F7;
+    --color-pos-border: #F1F3F6;
+    --color-pos-card-grey: #F8FAFC;
+    --color-pos-success: #30B22D;
+    --color-pos-error: #ED6B60;
+    --color-pos-warning: #FED71F;
+
+    --radius-pos-card: 24px;
+    --radius-pos-button: 50px;
+    --radius-pos-icon: 12px;
 }
 
 @layer theme {
@@ -33,6 +49,13 @@
         --color-accent: var(--color-white);
         --color-accent-content: var(--color-white);
         --color-accent-foreground: var(--color-neutral-800);
+
+        /* POS Dark Mode Overrides */
+        --color-pos-foreground: #F8FAFC;
+        --color-pos-secondary: #94A3B8;
+        --color-pos-muted: #020617;
+        --color-pos-border: #1E293B;
+        --color-pos-card-grey: #0F172A;
     }
 }
 
@@ -52,7 +75,7 @@
 }
 
 [data-flux-label] {
-    @apply  !mb-0 !leading-tight;
+    @apply !mb-0 !leading-tight;
 }
 
 input:focus[data-flux-control],
@@ -74,25 +97,60 @@ select:focus[data-flux-control] {
     }
 
     /* Text colors */
-    .text-primary { color: var(--color-primary) !important; }
-    .text-secondary { color: var(--color-secondary) !important; }
-    .text-accent { color: var(--color-accent-soft) !important; }
-    .text-dark { color: var(--color-dark) !important; }
+    .text-primary {
+        color: var(--color-primary) !important;
+    }
+
+    .text-secondary {
+        color: var(--color-secondary) !important;
+    }
+
+    .text-accent {
+        color: var(--color-accent-soft) !important;
+    }
+
+    .text-dark {
+        color: var(--color-dark) !important;
+    }
 
     /* Background colors */
-    .bg-primary { background-color: var(--color-primary) !important; }
-    .bg-secondary { background-color: var(--color-secondary) !important; }
-    .bg-accent { background-color: var(--color-accent-soft) !important; }
-    .bg-dark { background-color: var(--color-dark) !important; }
+    .bg-primary {
+        background-color: var(--color-primary) !important;
+    }
+
+    .bg-secondary {
+        background-color: var(--color-secondary) !important;
+    }
+
+    .bg-accent {
+        background-color: var(--color-accent-soft) !important;
+    }
+
+    .bg-dark {
+        background-color: var(--color-dark) !important;
+    }
 
     /* Hover variants (limited common cases) */
-    .hover\:bg-dark:hover { background-color: var(--color-dark) !important; }
+    .hover\:bg-dark:hover {
+        background-color: var(--color-dark) !important;
+    }
 
     /* Focus ring and border utilities to mirror Tailwind naming used in views */
-    .focus\:ring-primary:focus { --tw-ring-color: var(--color-primary) !important; }
-    .focus\:border-primary:focus { border-color: var(--color-primary) !important; }
+    .focus\:ring-primary:focus {
+        --tw-ring-color: var(--color-primary) !important;
+    }
+
+    .focus\:border-primary:focus {
+        border-color: var(--color-primary) !important;
+    }
 
     /* Hide scrollbar but keep scrollable */
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
 }

@@ -111,82 +111,127 @@ new #[Layout('components.layouts.auth')] class extends Component {
 }; ?>
 
 
-<div class="mx-auto w-full max-w-sm px-4 py-6 sm:max-w-md sm:px-6 sm:py-8 flex flex-col gap-6 sm:gap-8">
-        <div class="flex flex-col items-center gap-3 sm:gap-4">
-            <img src="{{ asset('images/tanpajudul.png') }}" alt="EssyCoff Logo" class="w-20 h-20 sm:w-36 sm:h-36">
-            <h2 class="text-xl sm:text-2xl font-bold text-primary">Selamat Datang Kembali</h2>
-            <p class="hidden sm:block text-gray-600 text-center">Silakan masuk ke akun Anda untuk melanjutkan</p>
+<div class="flex flex-col gap-10">
+    <!-- Header Section -->
+    <div class="space-y-6">
+        
+        
+        <div class="space-y-2">
+            <h2 class="text-4xl font-black text-pos-foreground tracking-tight">Login.</h2>
+            <p class="text-pos-secondary font-medium text-lg leading-relaxed">
+                Kelola bisnis kopimu dengan lebih mudah.<br>
+                <span class="text-pos-foreground">Silakan masuk ke akun Anda.</span>
+            </p>
         </div>
+    </div>
 
-    <!-- Session Status (minimal) -->
+    <!-- Session Status -->
     @if (session('status'))
-        <p class="text-center text-sm text-primary mb-2">{{ session('status') }}</p>
+        <div class="p-4 bg-primary-blue/10 border border-primary-blue/20 rounded-2xl">
+            <p class="text-sm font-bold text-primary-blue">{{ session('status') }}</p>
+        </div>
     @endif
 
-    <!-- Global error bubble removed; errors shown per field below -->
+    <form method="POST" wire:submit="login" class="flex flex-col gap-8">
+        <div class="space-y-5">
+            <!-- Email Address -->
+            <div class="space-y-2">
+                <div class="flex justify-between items-center px-1">
+                    <label for="email" class="text-sm font-black text-pos-foreground uppercase tracking-widest">{{ __('Email') }}</label>
+                </div>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i data-lucide="mail" class="size-5 text-pos-secondary group-focus-within:text-primary-blue transition-colors"></i>
+                    </div>
+                    <input 
+                        id="email" 
+                        type="email" 
+                        wire:model="email" 
+                        placeholder="Masukkan email Anda" 
+                        class="w-full bg-pos-muted/50 dark:bg-pos-border/20 border-2 border-transparent focus:border-primary-blue focus:bg-white dark:focus:bg-pos-card-grey rounded-2xl py-4 pl-12 pr-4 text-pos-foreground font-bold placeholder:text-pos-secondary placeholder:font-medium transition-all outline-none"
+                        required 
+                        autofocus
+                    >
+                </div>
+                @error('email')
+                    <p class="text-xs font-bold text-pos-error mt-1 flex items-center gap-1">
+                        <i data-lucide="alert-circle" class="size-3"></i>
+                        {{ $message }}
+                    </p>
+                @enderror
+            </div>
 
-    <form method="POST" wire:submit="login" class="flex flex-col gap-4 sm:gap-6">
-        <!-- Email Address -->
-        <div class="space-y-2">
-            <label for="email" class="hidden sm:block text-sm font-medium text-primary">{{ __('Email address') }}</label>
-            <flux:input
-                id="email"
-                wire:model="email"
-                :label="null"
-                type="email"
-                required
-                autofocus
-                autocomplete="email"
-                placeholder="email@example.com"
-                color="primary"
-                input-class="{{ $errors->has('email') ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'focus:ring-primary focus:border-primary' }} h-11 sm:h-10 text-base sm:text-sm placeholder:text-dark/60"
-            />
-            @error('email')
-                <p class="text-sm text-red-600">{{ $message }}</p>
-            @enderror
+            <!-- Password -->
+            <div class="space-y-2">
+                <div class="flex justify-between items-center px-1">
+                    <label for="password" class="text-sm font-black text-pos-foreground uppercase tracking-widest">{{ __('Password') }}</label>
+                    @if (Route::has('password.request'))
+                        <a href="{{ route('password.request') }}" class="text-xs font-bold text-primary-blue hover:underline">Lupa Password?</a>
+                    @endif
+                </div>
+                <div class="relative group" x-data="{ show: false }">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i data-lucide="lock" class="size-5 text-pos-secondary group-focus-within:text-primary-blue transition-colors"></i>
+                    </div>
+                    <input 
+                        :type="show ? 'text' : 'password'" 
+                        id="password" 
+                        wire:model="password" 
+                        placeholder="••••••••" 
+                        class="w-full bg-pos-muted/50 dark:bg-pos-border/20 border-2 border-transparent focus:border-primary-blue focus:bg-white dark:focus:bg-pos-card-grey rounded-2xl py-4 pl-12 pr-12 text-pos-foreground font-bold placeholder:text-pos-secondary placeholder:font-medium transition-all outline-none"
+                        required
+                    >
+                    <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-4 flex items-center text-pos-secondary hover:text-pos-foreground transition-colors">
+                        <i x-show="!show" data-lucide="eye" class="size-5"></i>
+                        <i x-show="show" data-lucide="eye-off" class="size-5"></i>
+                    </button>
+                </div>
+                @error('password')
+                    <p class="text-xs font-bold text-pos-error mt-1 flex items-center gap-1">
+                        <i data-lucide="alert-circle" class="size-3"></i>
+                        {{ $message }}
+                    </p>
+                @enderror
+            </div>
         </div>
 
-        <!-- Password -->
-        <div class="space-y-2">
-            <label for="password" class="hidden sm:block text-sm font-medium text-primary">{{ __('Password') }}</label>
-            <flux:input
-                id="password"
-                wire:model="password"
-                :label="null"
-                type="password"
-                required
-                autocomplete="current-password"
-                :placeholder="__('Password')"
-                viewable
-                color="primary"
-                input-class="{{ $errors->has('password') ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'focus:ring-primary focus:border-primary' }} h-11 sm:h-10 text-base sm:text-sm placeholder:text-dark/60"
-            />
-            @error('password')
-                <p class="text-sm text-red-600">{{ $message }}</p>
-            @enderror
-        
+        <!-- Remember Me & Extra Info -->
+        <div class="flex items-center justify-between px-1">
+            <label class="flex items-center gap-3 cursor-pointer group">
+                <div class="relative">
+                    <input type="checkbox" wire:model="remember" class="peer sr-only">
+                    <div class="size-6 bg-pos-muted dark:bg-pos-border/50 border-2 border-pos-border rounded-lg peer-checked:bg-primary-blue peer-checked:border-primary-blue transition-all group-hover:scale-105"></div>
+                    <i data-lucide="check" class="absolute inset-0 size-4 m-auto text-white scale-0 peer-checked:scale-100 transition-transform"></i>
+                </div>
+                <span class="text-sm font-bold text-pos-secondary group-hover:text-pos-foreground transition-colors">Ingatkan Saya</span>
+            </label>
         </div>
 
-        <!-- Remember Me -->
-        <div class="flex items-center gap-2">
-            <flux:checkbox
-                id="remember"
-                wire:model="remember"
-                :label="null"
-                checked
-                color="primary"
-                input-class="accent-[#6f4e37] focus:ring-[#6f4e37] border-[#6f4e37]"
-            />
-            <label for="remember" class="text-sm text-primary select-none cursor-pointer">Ingatkan saya</label>
-        </div>
+      <!-- Login Button -->
+<button
+    type="submit"
+    class="group relative w-full 
+           bg-slate-900 dark:bg-white 
+           text-white dark:text-slate-900 
+           font-bold text-lg py-5 rounded-2xl 
+           shadow-xl shadow-black/10 dark:shadow-white/10
+           hover:bg-blue-600 dark:hover:bg-blue-600
+           hover:text-white
+           transition-all duration-300 
+           active:scale-[0.98] overflow-hidden">
 
-        <!-- Login Button -->
-        <div class="flex items-center justify-end">
-            <flux:button type="submit" variant="primary" icon="arrow-right-start-on-rectangle" color="primary" class="w-full h-11 sm:h-10 text-base sm:text-sm bg-primary text-white hover:bg-dark focus:ring-2 focus:ring-primary focus:outline-none inline-flex items-center justify-center gap-2">
-                {{ __('Log in') }}
-            </flux:button>
-        </div>
+    <div class="relative z-10 flex items-center justify-center gap-3">
+        <span>{{ __('Log in') }}</span>
+        <i data-lucide="arrow-right"
+           class="size-6 group-hover:translate-x-1 transition-transform"></i>
+    </div>
+
+    <div class="absolute inset-0 
+                bg-gradient-to-r 
+                from-transparent via-white/10 dark:via-black/10 to-transparent 
+                -translate-x-full group-hover:translate-x-full 
+                transition-transform duration-1000"></div>
+</button>
+
     </form>
-    
-
 </div>

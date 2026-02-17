@@ -1,71 +1,68 @@
-<div class="p-6 space-y-8 bg-white dark:bg-zinc-800 min-h-screen text-gray-900 dark:text-white">
-    <!-- Judul -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div class="p-6 lg:p-10 space-y-10 bg-pos-muted min-h-screen font-sans">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Kategori</h1>
-            <p class="text-gray-600 dark:text-zinc-300">Kelola semua kategori produk dalam sistem</p>
+            <div class="flex items-center gap-3 mb-2">
+                <div class="size-8 bg-primary-blue/10 rounded-lg flex items-center justify-center text-primary-blue">
+                    <i data-lucide="tag" class="size-5"></i>
+                </div>
+                <span class="text-[10px] font-black text-primary-blue uppercase tracking-widest">Organisasi Menu</span>
+            </div>
+            <h1 class="text-3xl lg:text-4xl font-black text-pos-foreground tracking-tight">Kategori Produk</h1>
+            <p class="text-pos-secondary font-medium mt-1">Kelompokkan menu Anda untuk navigasi yang lebih cepat di POS.</p>
         </div>
-        <flux:button 
-            variant="primary" 
-            color="sky" 
-            icon="plus" 
-            href="{{ route('categories.create') }}" 
-            size="sm">
-            Tambah Kategori
-        </flux:button>
+        
+        <a href="{{ route('categories.create') }}" 
+            class="flex items-center gap-3 px-6 py-4 rounded-2xl bg-primary-blue text-white font-bold text-sm hover:bg-primary-blue-hover shadow-xl shadow-primary-blue/20 transition-all active:scale-95" 
+            wire:navigate>
+            <i data-lucide="plus-circle" class="size-5"></i>
+            <span>Tambah Kategori</span>
+        </a>
     </div>
 
-    
-
-
-    <!-- Tabel Kategori -->
-    <div class="bg-white dark:bg-zinc-800 shadow rounded-lg overflow-hidden border border-gray-200 dark:border-zinc-700 transition-colors duration-200">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-700 dark:text-zinc-200">
-                <thead class="bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-zinc-100 uppercase text-xs font-semibold">
+    <!-- Categories Grid/Table -->
+    <div class="bg-white dark:bg-pos-card-grey rounded-[40px] border border-pos-border dark:border-zinc-800 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto no-scrollbar">
+             <table class="w-full text-left">
+                <thead class="bg-pos-card-grey/50 dark:bg-pos-muted/10">
                     <tr>
-                        <th class="px-4 py-3">No</th>
-                        <th class="px-4 py-3">Nama</th>
-                        <th class="px-4 py-3 text-right">Aksi</th>
+                        <th class="px-10 py-5 text-[10px] font-black text-pos-secondary uppercase tracking-widest w-24 text-center">No</th>
+                        <th class="px-10 py-5 text-[10px] font-black text-pos-secondary uppercase tracking-widest">Nama Kategori</th>
+                        <th class="px-10 py-5 text-[10px] font-black text-pos-secondary uppercase tracking-widest text-right">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-zinc-700">
+                <tbody class="divide-y divide-pos-border dark:divide-zinc-800">
                     @forelse ($categories as $index => $category)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out">
-                            <td class="px-4 py-3 font-medium text-gray-500 dark:text-zinc-400">
-                                {{ $index + 1 }}
+                        <tr class="hover:bg-pos-muted/20 dark:hover:bg-pos-muted/5 transition-colors group">
+                            <td class="px-10 py-6 text-center">
+                                <span class="size-8 inline-flex items-center justify-center rounded-lg bg-pos-muted dark:bg-pos-muted/20 text-pos-secondary font-black text-xs">{{ $index + 1 }}</span>
                             </td>
-                            <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">
-                                {{ $category->name }}
+                            <td class="px-10 py-6">
+                                <h5 class="text-base font-black text-pos-foreground capitalize group-hover:text-primary-blue transition-colors">{{ $category->name }}</h5>
                             </td>
-                            <td class="px-4 py-3 text-right">
-                                <div class="flex gap-2 justify-end">
-                                    <flux:button 
-                                        variant="primary" 
-                                        icon="pencil-square" 
-                                        href="{{ route('categories.edit', $category) }}" 
-                                        size="sm">
-                                        Edit
-                                    </flux:button>
-
-                                    <flux:button 
-                                        variant="danger" 
-                                        icon="trash" 
-                                        wire:click="confirmDelete({{ $category->id }})" 
-                                        size="sm">
-                                        Hapus
-                                    </flux:button>
+                            <td class="px-10 py-6">
+                                 <div class="flex items-center justify-end gap-3">
+                                    <a href="{{ route('categories.edit', $category) }}" 
+                                        class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-pos-muted dark:bg-pos-muted/20 text-pos-foreground font-bold text-xs hover:bg-primary-blue hover:text-white transition-all group/btn" 
+                                        wire:navigate>
+                                        <i data-lucide="edit-2" class="size-4"></i>
+                                        <span>Edit</span>
+                                    </a>
+                                    <button wire:click="confirmDelete({{ $category->id }})" 
+                                        class="size-10 flex items-center justify-center rounded-xl bg-pos-muted dark:bg-pos-muted/20 text-pos-secondary hover:bg-pos-error hover:text-white transition-all">
+                                        <i data-lucide="trash-2" class="size-4"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="3" class="px-4 py-8 text-center text-gray-500 dark:text-zinc-500">
-                                <div class="flex flex-col items-center justify-center gap-2">
-                                    <svg class="w-8 h-8 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
-                                    </svg>
-                                    <span>Belum ada kategori. Cobalah menambahkan kategori baru.</span>
+                         <tr>
+                            <td colspan="3" class="px-10 py-20 text-center text-pos-secondary/30">
+                                <div class="flex flex-col items-center gap-4">
+                                    <div class="size-20 bg-pos-muted dark:bg-pos-muted/20 rounded-full flex items-center justify-center">
+                                        <i data-lucide="tags" class="size-10"></i>
+                                    </div>
+                                    <p class="font-black">Belum ada kategori terdaftar</p>
                                 </div>
                             </td>
                         </tr>
@@ -73,71 +70,39 @@
                 </tbody>
             </table>
         </div>
-
-        <!-- Pagination (jika menggunakan paginate) -->
+        
         @if(method_exists($categories, 'hasPages') && $categories->hasPages())
-            <div class="p-4 bg-gray-50 dark:bg-zinc-800 border-t border-gray-200 dark:border-zinc-700 transition-colors duration-200">
-                <div class="flex flex-col md:flex-row items-center justify-between gap-3">
-                    <p class="text-sm text-gray-600 dark:text-zinc-400">
-                        Menampilkan
-                        <span class="font-medium text-gray-900 dark:text-white">{{ $categories->firstItem() }}</span>
-                        –
-                        <span class="font-medium text-gray-900 dark:text-white">{{ $categories->lastItem() }}</span>
-                        dari
-                        <span class="font-semibold text-emerald-600 dark:text-emerald-400">{{ $categories->total() }}</span>
-                        data
-                    </p>
-
-                    <div class="[&>nav]:flex [&>nav]:items-center [&>nav]:gap-1">
-                        {{ $categories->links('components.pagination.simple-arrows') }}
-                    </div>
-                </div>
+            <div class="px-10 py-6 bg-pos-card-grey/30 dark:bg-pos-muted/10 border-t border-pos-border dark:border-zinc-800 flex items-center justify-between">
+                <p class="text-xs font-bold text-pos-secondary uppercase tracking-widest">Total <span class="text-primary-blue">{{ $categories->total() }}</span> Kategori</p>
+                {{ $categories->links('components.pagination.premium') }}
             </div>
         @endif
     </div>
 
-    <!-- Modal Konfirmasi Hapus Kategori -->
+     <!-- Modal Konfirmasi Hapus -->
     @if($confirmingCategoryDeletion)
-    <div
-        class="fixed inset-0 z-[60] overflow-y-auto"
-        aria-labelledby="modal-title"
-        role="dialog"
-        aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <!-- Background overlay -->
-            <div class="fixed inset-0 bg-black/50" wire:click="$set('confirmingCategoryDeletion', false)"></div>
-
-            <!-- Modal panel -->
-            <div class="relative bg-white dark:bg-zinc-800 rounded-lg p-6 w-full max-w-sm z-[70]">
-                <div class="text-center">
-                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
-                        <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                        Hapus Kategori
-                    </h3>
-                    <p class="text-gray-500 dark:text-zinc-400 mb-6">
-                        Apakah Anda yakin ingin menghapus kategori ini? Semua produk dalam kategori ini akan tetap ada tetapi tidak akan memiliki kategori.
-                    </p>
-                    <div class="flex justify-center gap-3">
-                        <flux:button
-                            wire:click="$set('confirmingCategoryDeletion', false)"
-                            variant="primary"
-                            class="px-4">
-                            Batal
-                        </flux:button>
-                        <flux:button
-                            wire:click="delete({{ $categoryIdToDelete }})"
-                            variant="danger"
-                            class="px-4">
-                            Ya, Hapus
-                        </flux:button>
-                    </div>
+        <div class="fixed inset-0 z-[999] flex items-center justify-center p-4">
+            <div class="fixed inset-0 bg-black/50 backdrop-blur-md" wire:click="$set('confirmingCategoryDeletion', false)"></div>
+            <div class="relative bg-white dark:bg-pos-card-grey rounded-[32px] w-full max-w-sm p-8 text-center shadow-2xl animate-peek border border-pos-border dark:border-zinc-800">
+                <div class="size-20 bg-pos-error/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="alert-triangle" class="size-10 text-pos-error"></i>
+                </div>
+                <h3 class="text-2xl font-black text-pos-foreground mb-3 tracking-tight">Hapus Kategori?</h3>
+                <p class="text-pos-secondary text-sm font-medium mb-8">Produk dalam kategori ini tetap aman, namun label kategorinya akan dihapus.</p>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <button wire:click="$set('confirmingCategoryDeletion', false)" class="py-4 bg-pos-muted dark:bg-pos-muted/20 text-pos-foreground rounded-2xl font-extrabold text-sm hover:bg-pos-border dark:hover:bg-pos-muted transition-all">Batal</button>
+                    <button wire:click="delete({{ $categoryIdToDelete }})" class="py-4 bg-pos-error text-white rounded-2xl font-extrabold text-sm hover:bg-pos-error/90 transition-all shadow-lg shadow-pos-error/20">Hapus</button>
                 </div>
             </div>
         </div>
-    </div>
     @endif
+
+    <style>
+        .animate-peek { animation: peek 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        @keyframes peek {
+            0% { transform: scale(0.9) translateY(20px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+    </style>
 </div>

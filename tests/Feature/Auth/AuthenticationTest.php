@@ -19,7 +19,7 @@ test('users can authenticate using the login screen', function () {
 
     $response
         ->assertHasNoErrors()
-        ->assertRedirect(route('dashboard', absolute: false));
+        ->assertRedirect(route('pos.cashier', absolute: false));
 
     $this->assertAuthenticated();
 });
@@ -42,7 +42,7 @@ test('users can logout', function () {
 
     $response = $this->actingAs($user)->post('/logout');
 
-    $response->assertRedirect('/');
+    $response->assertRedirect('/login');
 
     $this->assertGuest();
 });

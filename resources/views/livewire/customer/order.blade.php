@@ -1,1105 +1,431 @@
-<div class="livewire-customer-order">
+<div class="min-h-screen bg-pos-muted dark:bg-pos-muted pb-24" x-data="customerOrder()" x-init="init(); if (window.lucide) lucide.createIcons()">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'coffee-dark': '#2A1A0A',
-                        'coffee-medium': '#3E2813',
-                        'coffee-light': '#523728',
-                        'coffee-gold': '#D4A76A',
-                        'coffee-cream': '#F5F5F5',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap');
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(rgba(42, 26, 10, 0.7), rgba(42, 26, 10, 0.8)), url('/images/coffee-shop-bg.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-        }
-        
-        .content-overlay {
-            backdrop-filter: blur(2px);
-            background: rgba(245, 245, 245, 0.95);
-            border-radius: 20px;
-            border: 1px solid rgba(212, 167, 106, 0.2);
-        }
-
-        /* Success Modal Animations */
-        .success-modal {
-            animation: modalFadeIn 0.3s ease-out;
-        }
-
-        .checkmark-circle {
-            animation: scaleIn 0.3s ease-out 0.2s both;
-        }
-
-        .checkmark {
-            animation: drawCheckmark 0.5s ease-out 0.5s both;
-        }
-
-        @keyframes modalFadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        @keyframes scaleIn {
-            from {
-                transform: scale(0);
-            }
-
-            to {
-                transform: scale(1);
-            }
-        }
-
-        @keyframes drawCheckmark {
-            from {
-                stroke-dashoffset: 100;
-            }
-
-            to {
-                stroke-dashoffset: 0;
-            }
-        }
-
-        .checkmark-path {
-            stroke-dasharray: 100;
-            stroke-dashoffset: 100;
-        }
-
-        /* Hide sensitive data from print */
-        @media print {
-            #chat-container,
-            #order-modal,
-            #success-modal,
-            #clear-cart-modal,
-            #chat-bubble,
-            .fixed {
-                display: none !important;
-            }
-            
-            /* Only show the main menu content when printing */
-            body * {
-                visibility: hidden;
-            }
-            
-            main, main * {
-                visibility: visible;
-            }
-            
-            /* Hide floating elements and modals */
-            .fixed,
-            [id*="modal"],
-            [id*="chat"],
-            [id*="cart"] {
-                visibility: hidden !important;
-                display: none !important;
-            }
-        }
-    </style>
-
-    <div class="customer-bg min-h-screen">
-
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Hero Section -->
-        <div class="text-center mb-12">
-            <!-- Logo and Title -->
-            <div class="flex items-center justify-center mb-4">
-                <div class="w-16 h-16 mr-4 rounded-2xl bg-gradient-to-br from-coffee-gold to-coffee-medium p-[3px] shadow-lg">
-                    <div class="w-full h-full rounded-xl bg-white flex items-center justify-center shadow-sm">
-                        <img src="{{ asset('images/logo2.png') }}" alt="EssyCoff Logo" class="w-10 h-10 rounded-xl">
+    
+    <!-- Header -->
+    <header class="bg-white dark:bg-pos-card-grey border-b border-pos-border dark:border-zinc-800 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between">
+                <!-- Logo & Title -->
+                <div class="flex items-center gap-4">
+                    <div class="size-12 bg-white dark:bg-pos-muted rounded-2xl flex items-center justify-center shadow-lg border border-pos-border dark:border-zinc-800">
+                        <img src="{{ asset('images/logo2.png') }}" alt="EssyCoff" class="w-8 h-8 rounded-xl">
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-black text-pos-foreground">EssyCoff</h1>
+                        <p class="text-xs font-bold text-pos-secondary uppercase tracking-widest">Menu Customer</p>
                     </div>
                 </div>
-                <h1 class="text-4xl sm:text-5xl font-bold" style="font-family: 'Playfair Display', serif;">
-                    <span class="text-coffee-gold">EssyCoff</span>
-                </h1>
-            </div>
-            <div class="inline-flex items-center px-4 py-2 bg-coffee-gold bg-opacity-20 text-white rounded-full text-sm font-medium mb-4">
-                <i class="fas fa-fire mr-2"></i>
-                Menu Terbaru & Terlezat
-            </div>
-            @php
-                $tableFromQuery = request()->query('table');
-            @endphp
-            @if(session('table_error'))
-            <div class="mt-4 inline-flex items-center px-4 py-2 bg-red-600/90 text-white rounded-full text-sm font-medium mb-4 shadow">
-                <i class="fas fa-exclamation-triangle mr-2"></i>
-                {{ session('table_error') }}
-            </div>
-            @elseif($tableFromQuery)
-            <div class="mt-4 inline-flex items-center px-4 py-2 bg-green-600/80 text-white rounded-full text-sm font-medium mb-4 shadow">
-                <i class="fas fa-chair mr-2"></i>
-                Pesanan untuk Meja: <span class="ml-1 font-semibold">{{ $tableFromQuery }}</span>
-            </div>
-            @endif
-            <p class="text-xl text-white max-w-3xl mx-auto leading-relaxed">
-                Nikmati pengalaman kuliner terbaik dengan menu pilihan berkualitas premium
-            </p>
-        </div>
 
-        <!-- Search & Filter Section with Extended Background -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
-            <!-- Search Box -->
-            <form method="GET" action="{{ route('customer') }}" class="mb-6">
-                <div class="relative max-w-2xl mx-auto">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none ">
-                        <i class="fas fa-search text-gray-400"></i>
+                <!-- Table Info -->
+                @php
+                    $tableFromQuery = request()->query('table');
+                @endphp
+                @if($tableFromQuery)
+                    <div class="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary-blue/10 border border-primary-blue/20 rounded-2xl">
+                        <i data-lucide="armchair" class="size-4 text-primary-blue"></i>
+                        <span class="text-sm font-black text-primary-blue">Meja: {{ $tableFromQuery }}</span>
                     </div>
+                @endif
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Search & Filter -->
+        <div class="bg-white dark:bg-pos-card-grey rounded-[32px] p-6 mb-8 border border-pos-border dark:border-zinc-800 shadow-sm">
+            <!-- Search -->
+            <form method="GET" action="{{ route('customer') }}" class="mb-6">
+                <div class="relative">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-pos-secondary"></i>
                     <input type="text" name="search" value="{{ $search ?? '' }}"
-                        placeholder="Cari menu ..."
-                        class="block w-full pl-12 pr-20 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-coffee-gold focus:border-coffee-gold text-lg placeholder-gray-400 shadow-md focus:shadow-lg transition-shadow bg-white/90 text-gray-900">
+                        placeholder="Cari menu favorit Anda..."
+                        class="w-full h-14 pl-12 pr-4 rounded-2xl bg-pos-muted dark:bg-pos-muted/20 border-2 border-transparent focus:border-primary-blue outline-none text-pos-foreground placeholder:text-pos-secondary font-medium transition-all">
                     <input type="hidden" name="category" value="{{ $category ?? 'all' }}">
-                    <button type="submit" class="absolute inset-y-0 right-0 flex items-center px-6 bg-coffee-medium hover:bg-coffee-dark text-white rounded-r-xl transition-colors">
-                        Cari
-                    </button>
                 </div>
             </form>
 
             <!-- Category Filter -->
-            <div class="flex flex-wrap gap-2 justify-center mb-8">
+            <div class="flex flex-wrap gap-2">
                 <a href="{{ route('customer', ['search' => $search ?? '', 'category' => 'all']) }}"
-                    class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all {{ ($category ?? 'all') === 'all' ? 'bg-coffee-medium text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                    <i class="fas fa-th-large mr-2"></i>Semua
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all {{ ($category ?? 'all') === 'all' ? 'bg-primary-blue text-white shadow-lg shadow-primary-blue/25' : 'bg-pos-muted dark:bg-pos-muted/20 text-pos-secondary hover:text-pos-foreground border border-pos-border dark:border-zinc-800' }}">
+                    <i data-lucide="layout-grid" class="size-4"></i>
+                    Semua
                 </a>
                 @foreach($categories as $cat)
-                <a href="{{ route('customer', ['search' => $search ?? '', 'category' => strtolower($cat->name)]) }}"
-                    class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all {{ ($category ?? 'all') === strtolower($cat->name) ? 'bg-coffee-medium text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                    @php
-                    $categoryName = strtolower($cat->name);
-                    $icon = 'fa-utensils'; // default icon
-
-                    
-
-                    // Mapping kategori ke ikon yang sesuai
-                    if (strpos($categoryName, 'kopi') !== false || strpos($categoryName, 'coffee') !== false) {
-                        $icon = 'fa-mug-saucer';
-                    } elseif (strpos($categoryName, 'teh') !== false || strpos($categoryName, 'tea') !== false) {
-                        $icon = 'fa-mug-hot';
-                    } elseif (strpos($categoryName, 'minuman') !== false || strpos($categoryName, 'drink') !== false || strpos($categoryName, 'beverage') !== false) {
-                        $icon = 'fa-wine-glass';
-                    } elseif (strpos($categoryName, 'makanan') !== false || strpos($categoryName, 'food') !== false) {
-                        $icon = 'fa-hamburger';
-                    } elseif (strpos($categoryName, 'nasi') !== false || strpos($categoryName, 'rice') !== false) {
-                        $icon = 'fa-bowl-rice';
-                    } elseif (strpos($categoryName, 'mie') !== false || strpos($categoryName, 'noodle') !== false || strpos($categoryName, 'pasta') !== false) {
-                        $icon = 'fa-bowl-food';
-                    } elseif (strpos($categoryName, 'ayam') !== false || strpos($categoryName, 'chicken') !== false) {
-                        $icon = 'fa-drumstick-bite';
-                    } elseif (strpos($categoryName, 'pizza') !== false) {
-                        $icon = 'fa-pizza-slice';
-                    } elseif (strpos($categoryName, 'sandwich') !== false || strpos($categoryName, 'burger') !== false) {
-                        $icon = 'fa-hamburger';
-                    } elseif (strpos($categoryName, 'snack') !== false || strpos($categoryName, 'cemilan') !== false) {
-                        $icon = 'fa-cookie';
-                    } elseif (strpos($categoryName, 'dessert') !== false || strpos($categoryName, 'manis') !== false || strpos($categoryName, 'cake') !== false) {
-                        $icon = 'fa-cake-candles';
-                    } elseif (strpos($categoryName, 'es krim') !== false || strpos($categoryName, 'ice cream') !== false) {
-                        $icon = 'fa-ice-cream';
-                    } elseif (strpos($categoryName, 'sarapan') !== false || strpos($categoryName, 'breakfast') !== false) {
-                        $icon = 'fa-egg';
-                    } elseif (strpos($categoryName, 'salad') !== false) {
-                        $icon = 'fa-leaf';
-                    } elseif (strpos($categoryName, 'soup') !== false || strpos($categoryName, 'sop') !== false) {
-                        $icon = 'fa-bowl-hot';
-                    } else {
-                        $icon = 'fa-utensils'; // fallback
-                    }
-                    @endphp
-                    <i class="fas {{ $icon }} mr-2"></i>{{ $cat->name }}
-                </a>
+                    <a href="{{ route('customer', ['search' => $search ?? '', 'category' => strtolower($cat->name)]) }}"
+                        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all {{ ($category ?? 'all') === strtolower($cat->name) ? 'bg-primary-blue text-white shadow-lg shadow-primary-blue/25' : 'bg-pos-muted dark:bg-pos-muted/20 text-pos-secondary hover:text-pos-foreground border border-pos-border dark:border-zinc-800' }}">
+                        <i data-lucide="coffee" class="size-4"></i>
+                        {{ $cat->name }}
+                    </a>
                 @endforeach
-                <a href="{{ route('customer', ['search' => $search ?? '', 'category' => 'favorite']) }}"
-                    class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all {{ ($category ?? 'all') === 'favorite' ? 'bg-red-500 text-white shadow-md' : 'bg-red-50 text-red-600 hover:bg-red-100' }}">
-                    <i class="fas fa-heart mr-2"></i>Favorit
-                </a>
             </div>
+        </div>
 
-            <!-- Menu Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="menu-container">
+        <!-- Products Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             @forelse($products as $product)
-            <div class="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200 {{ $product->stock <= 0 ? 'opacity-60' : '' }}" data-category="{{ strtolower($product->category->name ?? 'uncategorized') }}">
-                <div class="relative">
-                    @if($product->image_url)
-                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-48 object-cover">
-                    @else
-                    <div class="w-full h-48 bg-gradient-to-br from-coffee-cream to-coffee-gold bg-opacity-30 flex items-center justify-center">
-                        <i class="fas fa-utensils text-coffee-gold text-3xl"></i>
-                    </div>
-                    @endif
+                <div class="group bg-white dark:bg-pos-card-grey rounded-[24px] overflow-hidden border border-pos-border dark:border-zinc-800 hover:border-primary-blue dark:hover:border-primary-blue hover:shadow-xl hover:shadow-primary-blue/5 transition-all {{ $product->stock <= 0 ? 'opacity-60' : '' }}">
+                    <!-- Product Image -->
+                    <div class="relative aspect-square overflow-hidden bg-pos-muted dark:bg-pos-muted/20">
+                        @if($product->image_url)
+                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        @else
+                            <div class="w-full h-full flex items-center justify-center">
+                                <i data-lucide="image" class="size-16 text-pos-secondary/30"></i>
+                            </div>
+                        @endif
 
-                    @if($product->stock <= 0)
-                        <div class="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-                        <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                            Habis
-                        </span>
-                </div>
-                @else
-                <div class="absolute top-2 right-2 bg-green-500 text-white rounded-lg px-2 py-1 text-xs font-semibold">
-                    Stok: {{ $product->stock }}
-                </div>
-                @endif
-            </div>
+                        <!-- Stock Badge -->
+                        @if($product->stock <= 0)
+                            <div class="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                <span class="px-4 py-2 bg-pos-error text-white rounded-full text-sm font-black">Habis</span>
+                            </div>
+                        @else
+                            <div class="absolute top-3 right-3 px-3 py-1.5 bg-pos-success/90 backdrop-blur-sm text-white rounded-xl text-xs font-black">
+                                Stok: {{ $product->stock }}
+                            </div>
+                        @endif
 
-            <div class="p-4">
-                <div class="mb-3">
-                    <h3 class="font-semibold text-gray-900 text-lg mb-1">{{ $product->name }}</h3>
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-coffee-gold bg-opacity-20 text-coffee-dark">
-                            {{ $product->category->name ?? 'Kategori tidak tersedia' }}
-                        </span>
+                        <!-- Favorite Badge -->
                         @if($product->favorite_data['total_ordered'] > 0)
-                        <div class="flex items-center text-xs text-red-500">
-                            <i class="fas fa-heart mr-1"></i>
-                            <span class="font-medium">{{ $product->favorite_data['total_ordered'] }}x dipesan</span>
-                        </div>
+                            <div class="absolute top-3 left-3 px-3 py-1.5 bg-pos-error/90 backdrop-blur-sm text-white rounded-xl text-xs font-black flex items-center gap-1">
+                                <i data-lucide="heart" class="size-3 fill-current"></i>
+                                {{ $product->favorite_data['total_ordered'] }}x
+                            </div>
                         @endif
                     </div>
-                </div>
 
-                <div class="flex items-center justify-between">
-                    <div class="text-lg font-bold text-gray-900">
-                        Rp {{ number_format($product->price, 0, ',', '.') }}
+                    <!-- Product Info -->
+                    <div class="p-4">
+                        <div class="mb-3">
+                            <h3 class="font-black text-pos-foreground text-lg mb-2 line-clamp-2">{{ $product->name }}</h3>
+                            <span class="inline-flex items-center px-2.5 py-1 bg-primary-blue/10 text-primary-blue rounded-lg text-xs font-bold">
+                                {{ $product->category->name ?? 'Uncategorized' }}
+                            </span>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="text-xl font-black text-pos-foreground">
+                                Rp {{ number_format($product->price, 0, ',', '.') }}
+                            </div>
+
+                            @if($product->stock > 0)
+                                <button @click="addToCart({{ $product->id }}, '{{ $product->name }}', {{ $product->price }}, {{ $product->stock }})"
+                                    class="flex items-center gap-2 px-4 py-2.5 bg-primary-blue hover:bg-primary-blue/90 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-primary-blue/20">
+                                    <i data-lucide="plus" class="size-4"></i>
+                                    Tambah
+                                </button>
+                            @else
+                                <span class="text-pos-secondary text-sm font-bold">Tidak Tersedia</span>
+                            @endif
+                        </div>
                     </div>
-
-                    @if($product->stock > 0)
-                    <button class="add-to-cart bg-coffee-medium hover:bg-coffee-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                        data-id="{{ $product->id }}"
-                        data-name="{{ $product->name }}"
-                        data-price="{{ $product->price }}"
-                        data-stock="{{ $product->stock }}">
-                        <i class="fas fa-plus mr-1"></i>Tambah
-                    </button>
-                    @else
-                    <span class="text-gray-400 text-sm font-medium">
-                        Tidak Tersedia
-                    </span>
-                    @endif
                 </div>
-            </div>
-        </div>
-        @empty
-        <div class="col-span-full text-center py-12">
-            <div class="bg-white rounded-xl shadow-sm p-8 max-w-md mx-auto">
-                <i class="fas fa-coffee text-4xl text-gray-300 mb-4"></i>
-                <h3 class="text-xl font-semibold text-gray-700 mb-2">Belum Ada Produk</h3>
-        </div>
-        </div>
-        @endforelse
-        </div>
+            @empty
+                <div class="col-span-full flex flex-col items-center justify-center py-16">
+                    <div class="size-20 bg-pos-muted dark:bg-pos-muted/20 rounded-full flex items-center justify-center mb-4">
+                        <i data-lucide="coffee" class="size-10 text-pos-secondary/30"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-pos-foreground mb-2">Belum Ada Produk</h3>
+                    <p class="text-pos-secondary">Produk akan segera ditambahkan</p>
+                </div>
+            @endforelse
         </div>
     </main>
 
     <!-- Floating Cart Button -->
-    <div class="fixed bottom-6 right-6 z-10">
-        <button id="chat-bubble" class="bg-coffee-medium hover:bg-coffee-dark text-white w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center">
-            <i class="fas fa-shopping-cart text-lg"></i>
-            <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 items-center justify-center" style="display: none;">0</span>
-        </button>
-    </div>
+    <button @click="toggleCart()" 
+        class="fixed bottom-6 right-6 size-16 bg-primary-blue hover:bg-primary-blue/90 text-white rounded-full shadow-2xl shadow-primary-blue/30 flex items-center justify-center z-40 transition-all hover:scale-110">
+        <i data-lucide="shopping-cart" class="size-6"></i>
+        <span x-show="cartCount > 0" x-text="cartCount" 
+            class="absolute -top-2 -right-2 size-6 bg-pos-error text-white text-xs font-black rounded-full flex items-center justify-center"></span>
+    </button>
 
     <!-- Cart Sidebar -->
-    <div class="fixed inset-y-0 right-0 w-full sm:w-96 max-w-full sm:max-w-none bg-white shadow-xl z-40 transform translate-x-full transition-transform duration-300 ease-in-out" id="chat-container">
-        <div class="flex flex-col h-full">
-            <!-- Cart Header -->
-            <div class="bg-coffee-medium text-white p-4 flex items-center justify-between">
-                <h3 class="text-lg font-semibold">Keranjang Belanja</h3>
-                <button id="close-chat" class="text-white hover:bg-coffee-dark p-2 rounded-lg transition-colors">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-
-            <!-- Cart Items -->
-            <div class="flex-1 overflow-y-auto p-4" id="chat-body">
-                <div class="text-center py-16 text-gray-500">
-                    <i class="fas fa-shopping-cart text-5xl mb-4 text-gray-300"></i>
-                    <p class="text-lg font-medium mb-2">Keranjang Kosong</p>
-                    <p class="text-sm text-gray-400">Tambahkan produk untuk mulai berbelanja</p>
-                </div>
-            </div>
-
-            <!-- Cart Footer -->
-            <div class="border-t border-gray-200 p-4 bg-gray-50">
-                <!-- Customer Name Input -->
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Pemesan</label>
-                    <input type="text" id="cart-customer-name" placeholder="Masukkan nama Anda" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-coffee-gold focus:border-coffee-gold text-sm text-coffee-dark">
-                </div>
-                
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-gray-700 font-medium">Total:</span>
-                    <span class="text-2xl font-bold text-gray-900">Rp <span id="cart-total">0</span></span>
-                </div>
-                
-                <div class="space-y-2">
-                    <button id="checkout-btn" class="w-full bg-coffee-medium hover:bg-coffee-dark text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                        Checkout
-                    </button>
-                    <button id="clear-cart-btn" class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 rounded-lg transition-colors">
-                        <i class="fas fa-trash mr-2"></i>Kosongkan Semua
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- History Sidebar Removed -->
-
-    <!-- Order Confirmation Modal -->
-    <div id="order-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
-            <div class="text-center mb-6">
-                <div class="w-12 h-12 bg-coffee-medium rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-receipt text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold text-gray-900">Konfirmasi Pesanan</h3>
-                <p class="text-gray-600 text-sm mt-1">Apakah Anda yakin ingin melanjutkan pesanan?</p>
-            </div>
-
-            <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm text-gray-600">Nama Pemesan:</span>
-                    <span class="font-medium text-gray-900" id="modal-customer-name">-</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="font-medium text-gray-700">Total:</span>
-                    <span class="font-bold text-xl text-gray-900">Rp <span id="modal-total">0</span></span>
-                </div>
-            </div>
-
-            <div class="flex space-x-3">
-                <button id="cancel-order" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-4 rounded-lg transition-colors">
-                    Batal
-                </button>
-                <button id="confirm-order" class="flex-1 bg-coffee-medium hover:bg-coffee-dark text-white font-medium py-3 px-4 rounded-lg transition-colors">
-                    Konfirmasi Pesanan
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Clear Cart Confirmation Modal -->
-    <div id="clear-cart-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full mx-4">
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-trash text-red-500 text-2xl"></i>
-                </div>
-                <h3 class="text-xl font-bold text-gray-900 mb-2">Kosongkan Keranjang?</h3>
-                <p class="text-gray-600 text-sm">Semua produk dalam keranjang akan dihapus. Tindakan ini tidak dapat dibatalkan.</p>
-            </div>
-
-            <div class="flex space-x-3">
-                <button id="cancel-clear-cart" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-4 rounded-lg transition-colors">
-                    Batal
-                </button>
-                <button id="confirm-clear-cart" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-4 rounded-lg transition-colors">
-                    <i class="fas fa-trash mr-2"></i>Kosongkan
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Table Error Modal -->
-    <div id="table-error-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 text-center">
-            <!-- Error Icon -->
-            <div class="w-20 h-20 mx-auto mb-6 relative">
-                <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
-                    <i class="fas fa-exclamation-triangle text-red-500 text-3xl"></i>
-                </div>
-            </div>
-
-            <!-- Error Message -->
-            <h3 class="text-2xl font-bold text-gray-900 mb-3">Meja Tidak Ditemukan</h3>
-            <p class="text-gray-600 mb-2" id="table-error-message">Meja yang Anda cari tidak tersedia.</p>
-            <div class="inline-flex items-center px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium mb-6">
-                <i class="fas fa-info-circle mr-2"></i>
-                Silakan hubungi staff untuk bantuan
-            </div>
-
-            <!-- Action Button -->
-            <button id="close-table-error-modal" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg transition-colors">
-                <i class="fas fa-times mr-2"></i>Tutup
+    <div x-show="showCart" 
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="translate-x-full"
+        x-transition:enter-end="translate-x-0"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="translate-x-0"
+        x-transition:leave-end="translate-x-full"
+        class="fixed inset-y-0 right-0 w-full sm:w-96 bg-white dark:bg-pos-card-grey shadow-2xl z-50 flex flex-col"
+        style="display: none;">
+        
+        <!-- Cart Header -->
+        <div class="bg-primary-blue text-white p-6 flex items-center justify-between">
+            <h3 class="text-xl font-black">Keranjang Belanja</h3>
+            <button @click="toggleCart()" class="size-10 hover:bg-white/10 rounded-xl flex items-center justify-center transition-colors">
+                <i data-lucide="x" class="size-6"></i>
             </button>
+        </div>
+
+        <!-- Cart Items -->
+        <div class="flex-1 overflow-y-auto p-6 custom-scroll">
+            <template x-if="cart.length === 0">
+                <div class="flex flex-col items-center justify-center h-full text-center">
+                    <div class="size-20 bg-pos-muted dark:bg-pos-muted/20 rounded-full flex items-center justify-center mb-4">
+                        <i data-lucide="shopping-cart" class="size-10 text-pos-secondary/30"></i>
+                    </div>
+                    <p class="text-lg font-black text-pos-foreground mb-2">Keranjang Kosong</p>
+                    <p class="text-sm text-pos-secondary">Tambahkan produk untuk mulai berbelanja</p>
+                </div>
+            </template>
+
+            <div class="space-y-4">
+                <template x-for="item in cart" :key="item.id">
+                    <div class="bg-pos-muted dark:bg-pos-muted/20 rounded-2xl p-4 border border-pos-border dark:border-zinc-800">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex-1">
+                                <h4 class="font-black text-pos-foreground" x-text="item.name"></h4>
+                                <p class="text-sm text-pos-secondary">
+                                    Rp <span x-text="Number(item.price).toLocaleString('id-ID')"></span> × <span x-text="item.quantity"></span>
+                                </p>
+                            </div>
+                            <button @click="removeFromCart(item.id)" class="text-pos-error hover:bg-pos-error/10 p-2 rounded-lg transition-colors">
+                                <i data-lucide="trash-2" class="size-4"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <button @click="decreaseQuantity(item.id)" class="size-8 bg-white dark:bg-pos-card-grey border border-pos-border dark:border-zinc-800 rounded-lg font-bold hover:bg-pos-border dark:hover:bg-pos-muted/40 transition-colors">-</button>
+                                <span class="w-12 text-center font-black text-pos-foreground" x-text="item.quantity"></span>
+                                <button @click="increaseQuantity(item.id)" class="size-8 bg-white dark:bg-pos-card-grey border border-pos-border dark:border-zinc-800 rounded-lg font-bold hover:bg-pos-border dark:hover:bg-pos-muted/40 transition-colors">+</button>
+                            </div>
+                            <div class="text-lg font-black text-pos-foreground">
+                                Rp <span x-text="(Number(item.price) * Number(item.quantity)).toLocaleString('id-ID')"></span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Cart Footer -->
+        <div class="border-t border-pos-border dark:border-zinc-800 p-6 bg-pos-muted/30 dark:bg-pos-muted/10">
+            <!-- Customer Name -->
+            <div class="mb-4">
+                <label class="block text-sm font-black text-pos-secondary uppercase tracking-widest mb-2">Nama Pemesan</label>
+                <input type="text" x-model="customerName" placeholder="Masukkan nama Anda"
+                    class="w-full h-12 px-4 rounded-xl bg-white dark:bg-pos-card-grey border-2 border-pos-border dark:border-zinc-800 focus:border-primary-blue outline-none text-pos-foreground font-medium transition-all">
+            </div>
+
+            <!-- Total -->
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-sm font-black text-pos-secondary uppercase tracking-widest">Total</span>
+                <span class="text-2xl font-black text-pos-foreground">Rp <span x-text="cartTotal.toLocaleString('id-ID')"></span></span>
+            </div>
+
+            <!-- Actions -->
+            <div class="space-y-2">
+                <button @click="checkout()" :disabled="cart.length === 0 || !customerName.trim()"
+                    class="w-full py-4 bg-primary-blue hover:bg-primary-blue/90 text-white rounded-2xl font-black transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary-blue/20">
+                    Checkout
+                </button>
+                <button @click="clearCart()" :disabled="cart.length === 0"
+                    class="w-full py-3 bg-pos-error/10 hover:bg-pos-error/20 text-pos-error rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i data-lucide="trash-2" class="size-4 inline mr-2"></i>Kosongkan Keranjang
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- Success Modal -->
-    <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="success-modal bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center">
-            <!-- Animated Checkmark -->
-            <div class="checkmark-circle w-20 h-20 mx-auto mb-6 relative">
-                <svg class="w-20 h-20" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="45" fill="#10B981" class="checkmark-circle" />
-                    <path class="checkmark checkmark-path" d="M25 50 L40 65 L75 30"
-                        stroke="white" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
+    <div x-show="showSuccessModal" 
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-[999] p-4"
+        style="display: none;">
+        <div class="bg-white dark:bg-pos-card-grey rounded-[32px] p-8 max-w-md w-full text-center shadow-2xl border border-pos-border dark:border-zinc-800 animate-peek">
+            <div class="size-20 bg-pos-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="check-circle" class="size-10 text-pos-success"></i>
             </div>
-
-            <!-- Success Message -->
-            <h3 class="text-2xl font-bold text-gray-900 mb-3">Pesanan Berhasil!</h3>
-            <p class="text-gray-600 mb-2">Pesanan Anda telah dikirim</p>
-            <div class="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium mb-6">
-                <i class="fas fa-clock mr-2"></i>
-                Status: Pending Payment
-            </div>
-
-            <!-- Order Details -->
-            <div class="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+            <h3 class="text-2xl font-black text-pos-foreground mb-3">Pesanan Berhasil!</h3>
+            <p class="text-pos-secondary mb-6">Pesanan Anda telah dikirim ke kasir</p>
+            
+            <div class="bg-pos-muted dark:bg-pos-muted/20 rounded-2xl p-4 mb-6 text-left">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm text-gray-600">Nama Pemesan:</span>
-                    <span class="font-medium text-gray-900" id="success-customer-name">-</span>
+                    <span class="text-sm text-pos-secondary">Nama:</span>
+                    <span class="font-black text-pos-foreground" x-text="customerName"></span>
                 </div>
                 <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-600">Total Pembayaran:</span>
-                    <span class="font-bold text-lg text-coffee-medium">Rp <span id="success-total">0</span></span>
-                </div>
-                <div class="flex justify-between items-center mt-2">
-                    <span class="text-sm text-gray-600">Meja:</span>
-                    <span class="font-medium text-gray-900" id="success-table">-</span>
+                    <span class="text-sm text-pos-secondary">Total:</span>
+                    <span class="font-black text-lg text-primary-blue">Rp <span x-text="lastOrderTotal.toLocaleString('id-ID')"></span></span>
                 </div>
             </div>
 
-            <!-- Instruction to go to cashier -->
-            <div class="mb-6 text-left">
-                <div class="flex items-start gap-3 p-3 rounded-lg bg-coffee-gold/15 border border-coffee-gold/30">
-                    <div class="shrink-0">
-                        <i class="fas fa-cash-register text-coffee-dark"></i>
-                    </div>
-                    <div class="text-sm text-coffee-dark leading-relaxed">
-                        <div class="font-semibold">Silakan menuju Kasir untuk pembayaran dan proses makanan.</div>
-                        <div id="success-instruction" class="mt-1">Sebutkan nomor/meja Anda agar pesanan segera diproses.</div>
-                        <div id="success-table-highlight" class="mt-2 hidden">
-                            <span class="inline-flex items-center px-2.5 py-1.5 rounded-md bg-white text-coffee-dark border border-coffee-gold/40 text-sm font-semibold">
-                                <i class="fas fa-chair mr-2"></i>
-                                <span id="success-table-badge">Meja -</span>
-                            </span>
-                        </div>
+            <div class="bg-pos-warning/10 border border-pos-warning/20 rounded-2xl p-4 mb-6 text-left">
+                <div class="flex items-start gap-3">
+                    <i data-lucide="info" class="size-5 text-pos-warning shrink-0 mt-0.5"></i>
+                    <div class="text-sm text-pos-secondary">
+                        <p class="font-bold text-pos-foreground mb-1">Silakan ke Kasir</p>
+                        <p>Lakukan pembayaran di kasir untuk memproses pesanan Anda.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Action Button -->
-            <button id="close-success-modal" class="w-full bg-coffee-medium hover:bg-coffee-dark text-white font-semibold py-3 rounded-lg transition-colors">
-                <i class="fas fa-check mr-2"></i>Selesai
+            <button @click="closeSuccessModal()" 
+                class="w-full py-4 bg-primary-blue hover:bg-primary-blue/90 text-white rounded-2xl font-black transition-all shadow-lg shadow-primary-blue/20">
+                Selesai
             </button>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Table context from URL ?table=CODE
-            const urlParams = new URLSearchParams(window.location.search);
-            const tableCode = urlParams.get('table');
-            if (tableCode) {
-                try { localStorage.setItem('customer_table_code', tableCode); } catch (e) {}
-            }
-            // Initialize table select from storage or URL
-            const tableSelect = document.getElementById('customer-table-select');
-            const initialTable = tableCode || (function(){ try { return localStorage.getItem('customer_table_code') } catch(e){ return null } })();
-            if (tableSelect && initialTable) {
-                tableSelect.value = initialTable;
-            }
-
-            // Validate table code on page load if present
-            if (tableCode) {
-                // Check if table banner shows error (means table not found)
-                const hasTableError = document.querySelector('[class*="bg-red-600"]');
-                if (hasTableError) {
-                    // Clear invalid table from localStorage
-                    try {
-                        localStorage.removeItem('customer_table_code');
-                    } catch (e) {}
-                }
-            }
-            let cart = [];
-            const chatBubble = document.getElementById('chat-bubble');
-            const chatContainer = document.getElementById('chat-container');
-            const chatBody = document.getElementById('chat-body');
-            const cartCount = document.getElementById('cart-count');
-            const cartTotal = document.getElementById('cart-total');
-            const checkoutBtn = document.getElementById('checkout-btn');
-            const clearCartBtn = document.getElementById('clear-cart-btn');
-            const closeChat = document.getElementById('close-chat');
-            // History panel variables removed
-            const tabs = document.querySelectorAll('.tab');
-            const orderModal = document.getElementById('order-modal');
-            const modalTotal = document.getElementById('modal-total');
-            const cancelOrder = document.getElementById('cancel-order');
-            const confirmOrder = document.getElementById('confirm-order');
-            const categoryBtns = document.querySelectorAll('.category-btn');
-            const menuCards = document.querySelectorAll('.menu-card');
-            const successModal = document.getElementById('success-modal');
-            const closeSuccessModal = document.getElementById('close-success-modal');
-            const clearCartModal = document.getElementById('clear-cart-modal');
-            const cancelClearCart = document.getElementById('cancel-clear-cart');
-            const confirmClearCart = document.getElementById('confirm-clear-cart');
-            const tableErrorModal = document.getElementById('table-error-modal');
-            const closeTableErrorModal = document.getElementById('close-table-error-modal');
-
-            // Add to cart functionality
-            document.querySelectorAll('.add-to-cart').forEach(button => {
-                button.addEventListener('click', function() {
-                    const id = this.dataset.id;
-                    const name = this.dataset.name;
-                    const price = parseInt(this.dataset.price);
-                    const stock = parseInt(this.dataset.stock);
-
-                    // Check if item already in cart
-                    const existingItem = cart.find(item => item.id === id);
-                    const currentQuantityInCart = existingItem ? existingItem.quantity : 0;
-
-                    // Check stock availability
-                    if (currentQuantityInCart >= stock) {
-                        showNotification(`Stok ${name} tidak mencukupi. Tersisa ${stock} item`, 'error');
+        function customerOrder() {
+            return {
+                cart: [],
+                showCart: false,
+                showSuccessModal: false,
+                customerName: '',
+                lastOrderTotal: 0,
+                
+                get cartCount() {
+                    return this.cart.reduce((total, item) => total + item.quantity, 0);
+                },
+                
+                get cartTotal() {
+                    return this.cart.reduce((total, item) => total + (Number(item.price) * Number(item.quantity)), 0);
+                },
+                
+                init() {
+                    this.$watch('cart', value => {
+                        console.log('Cart changed', value);
+                    });
+                    
+                    // Initialize Lucide icons after Alpine loads
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
+                },
+                
+                addToCart(id, name, price, stock) {
+                    const existingItem = this.cart.find(item => item.id === id);
+                    const currentQty = existingItem ? existingItem.quantity : 0;
+                    
+                    if (currentQty >= stock) {
+                        alert(`Stok ${name} tidak mencukupi. Tersisa ${stock} item`);
                         return;
                     }
-
+                    
                     if (existingItem) {
-                        existingItem.quantity += 1;
-                        existingItem.stock = stock; // Store stock info
+                        existingItem.quantity++;
                     } else {
-                        cart.push({
-                            id: id,
-                            name: name,
-                            price: price,
-                            quantity: 1,
-                            stock: stock
-                        });
+                        this.cart.push({ id, name, price: Number(price), quantity: 1, stock });
                     }
-
-                    updateCart();
-                    showNotification(`${name} ditambahkan ke keranjang`);
-
-                    // On larger screens, auto-open cart; on mobile keep it closed to avoid covering UI
-                    const isDesktopOrTablet = window.matchMedia('(min-width: 768px)').matches; // md breakpoint
-                    if (isDesktopOrTablet) {
-                        chatContainer.classList.remove('translate-x-full');
-                        chatContainer.classList.add('translate-x-0');
+                    
+                    console.log('Cart updated:', this.cart);
+                    console.log('Cart total:', this.cartTotal);
+                    
+                    // Auto-open cart on desktop
+                    if (window.innerWidth >= 768) {
+                        this.showCart = true;
                     }
-                });
-            });
-
-            // Update cart display
-            function updateCart() {
-                const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
-                const totalAmount = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-
-                // Update cart count and visibility
-                cartCount.textContent = totalItems;
-                if (totalItems > 0) {
-                    cartCount.style.display = 'flex';
-                } else {
-                    cartCount.style.display = 'none';
-                }
-
-                // Update cart total
-                cartTotal.textContent = parseInt(totalAmount).toLocaleString('id-ID');
-                if (modalTotal) modalTotal.textContent = parseInt(totalAmount).toLocaleString('id-ID');
-
-                // Enable/disable checkout button
-                checkoutBtn.disabled = cart.length === 0;
-
-                // Update cart items
-                if (cart.length === 0) {
-                    chatBody.innerHTML = `
-                        <div class="text-center py-8 text-gray-500">
-                            <i class="fas fa-shopping-cart text-3xl mb-3"></i>
-                            <p class="font-medium">Keranjang masih kosong</p>
-                            <p class="text-sm mt-1">Klik produk untuk menambah ke keranjang</p>
-                        </div>
-                    `;
-                } else {
-                    chatBody.innerHTML = '';
-                    cart.forEach(item => {
-                        const itemTotal = item.price * item.quantity;
-                        const orderItem = document.createElement('div');
-                        orderItem.className = 'flex justify-between items-center py-3 border-b border-gray-100 last:border-b-0';
-                        orderItem.innerHTML = `
-                            <div>
-                                <h4 class="font-medium text-gray-600">${item.name}</h4>
-                                <p class="text-sm text-gray-600">Rp ${parseInt(item.price).toLocaleString('id-ID')} x ${item.quantity}</p>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="font-bold text-gray-900">Rp ${parseInt(itemTotal).toLocaleString('id-ID')}</span>
-                                <div class="flex items-center space-x-1">
-                                    <button class="decrease-item w-7 h-7 bg-gray-200 hover:bg-gray-300 rounded text-sm font-medium transition-colors" data-id="${item.id}">-</button>
-                                    <button class="increase-item w-7 h-7 bg-gray-200 hover:bg-gray-300 rounded text-sm font-medium transition-colors" data-id="${item.id}">+</button>
-                                    <button class="remove-item text-red-500 hover:text-red-700 p-1 hover:bg-red-50 rounded transition-colors" data-id="${item.id}">
-                                        <i class="fas fa-trash text-sm"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                        chatBody.appendChild(orderItem);
+                    
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
                     });
-
-                    // Add event listeners to cart item buttons
-                    document.querySelectorAll('.decrease-item').forEach(button => {
-                        button.addEventListener('click', function() {
-                            const id = this.dataset.id;
-                            const item = cart.find(item => item.id === id);
-
-                            if (item.quantity > 1) {
-                                item.quantity -= 1;
-                            } else {
-                                cart = cart.filter(item => item.id !== id);
-                            }
-
-                            updateCart();
-                        });
-                    });
-
-                    document.querySelectorAll('.increase-item').forEach(button => {
-                        button.addEventListener('click', function() {
-                            const id = this.dataset.id;
-                            const item = cart.find(item => item.id === id);
-                            item.quantity += 1;
-                            updateCart();
-                        });
-                    });
-
-                    document.querySelectorAll('.remove-item').forEach(button => {
-                        button.addEventListener('click', function() {
-                            const id = this.dataset.id;
-                            cart = cart.filter(item => item.id !== id);
-                            updateCart();
-                            showNotification('Item dihapus dari keranjang');
-                        });
-                    });
-                }
-            }
-
-            // Toggle cart sidebar
-            chatBubble.addEventListener('click', function() {
-                if (chatContainer.classList.contains('translate-x-full')) {
-                    chatContainer.classList.remove('translate-x-full');
-                    chatContainer.classList.add('translate-x-0');
-                } else {
-                    chatContainer.classList.add('translate-x-full');
-                    chatContainer.classList.remove('translate-x-0');
-                }
-            });
-
-            // Close cart sidebar
-            closeChat.addEventListener('click', function() {
-                chatContainer.classList.add('translate-x-full');
-                chatContainer.classList.remove('translate-x-0');
-            });
-
-            // History panel functionality removed
-
-            // Tab functionality
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabName = this.dataset.tab;
-
-                    // Update active tab
-                    tabs.forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-
-                    // Show corresponding content
-                    document.querySelectorAll('.tab-content').forEach(content => {
-                        content.classList.remove('active');
-                    });
-                    document.getElementById(`${tabName}-tab`).classList.add('active');
-                });
-            });
-
-            // Checkout button
-            checkoutBtn.addEventListener('click', function() {
-                const customerName = document.getElementById('cart-customer-name').value;
-                if (!customerName.trim()) {
-                    showNotification('Harap masukkan nama pemesan', 'error');
-                    return;
-                }
+                },
                 
-                // Update modal with customer name and total
-                document.getElementById('modal-customer-name').textContent = customerName;
-                const totalAmount = cart.reduce((total, item) => total + (parseInt(item.price) * item.quantity), 0);
-                document.getElementById('modal-total').textContent = parseInt(totalAmount).toLocaleString('id-ID');
-                
-                orderModal.classList.remove('hidden');
-            });
-
-            // Persist selected table on change
-            if (tableSelect) {
-                tableSelect.addEventListener('change', function() {
-                    const val = tableSelect.value;
-                    try {
-                        if (val) {
-                            localStorage.setItem('customer_table_code', val);
-                        } else {
-                            localStorage.removeItem('customer_table_code');
-                        }
-                    } catch (e) {}
-                    // Update banner (create if not exists)
-                    const bannerHtml = `<div class=\"mt-4 inline-flex items-center px-4 py-2 bg-green-600/80 text-white rounded-full text-sm font-medium mb-4 shadow\"><i class=\"fas fa-chair mr-2\"></i>Pesanan untuk Meja: <span class=\"ml-1 font-semibold\">${val || '-'}<\/span><\/div>`;
-                    let existing = document.querySelector('#table-banner');
-                    if (!existing) {
-                        const ref = document.querySelector('.inline-flex.items-center.px-4.py-2.bg-coffee-gold');
-                        if (ref && val) {
-                            const wrap = document.createElement('div');
-                            wrap.id = 'table-banner';
-                            wrap.innerHTML = bannerHtml;
-                            ref.insertAdjacentElement('afterend', wrap);
-                        }
-                    } else {
-                        existing.innerHTML = bannerHtml;
-                        if (!val) existing.remove();
-                    }
-                });
-            }
-            
-            // Clear cart button
-            clearCartBtn.addEventListener('click', function() {
-                if (cart.length === 0) {
-                    showNotification('Keranjang sudah kosong', 'error');
-                    return;
-                }
-                
-                clearCartModal.classList.remove('hidden');
-            });
-            
-            // Cancel clear cart
-            cancelClearCart.addEventListener('click', function() {
-                clearCartModal.classList.add('hidden');
-            });
-            
-            // Confirm clear cart
-            confirmClearCart.addEventListener('click', function() {
-                cart = [];
-                updateCart();
-                clearCartModal.classList.add('hidden');
-                showNotification('Keranjang berhasil dikosongkan');
-            });
-
-            // Cancel order
-            cancelOrder.addEventListener('click', function() {
-                orderModal.classList.add('hidden');
-            });
-
-            // Confirm order
-            confirmOrder.addEventListener('click', function() {
-                const customerName = document.getElementById('cart-customer-name').value;
-                
-                // Prepare order data
-                const orderData = {
-                    customer_name: customerName,
-                    items: cart,
-                    total: cart.reduce((total, item) => total + (parseInt(item.price) * item.quantity), 0)
-                };
-
-                // Send order to server
-                sendOrderToServer(orderData);
-            });
-
-            // Close success modal
-            closeSuccessModal.addEventListener('click', function() {
-                successModal.classList.add('hidden');
-            });
-
-            // Close table error modal
-            closeTableErrorModal.addEventListener('click', function() {
-                tableErrorModal.classList.add('hidden');
-                // Redirect to customer page without table parameter
-                window.location.href = '{{ route("customer") }}';
-            });
-            
-            // Close modals when clicking outside
-            clearCartModal.addEventListener('click', function(e) {
-                if (e.target === clearCartModal) {
-                    clearCartModal.classList.add('hidden');
-                }
-            });
-
-            // Category filter functionality
-            categoryBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const category = this.dataset.category;
-
-                    // Update active button
-                    categoryBtns.forEach(b => b.classList.remove('active', 'bg-primary', 'text-white'));
-                    this.classList.add('active', 'bg-primary', 'text-white');
-
-                    // Filter menu items
-                    menuCards.forEach(card => {
-                        if (category === 'all' || card.dataset.category === category) {
-                            card.style.display = 'block';
-                        } else {
-                            card.style.display = 'none';
-                        }
+                removeFromCart(id) {
+                    this.cart = this.cart.filter(item => item.id !== id);
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
                     });
-                });
-            });
-
-            // Function to send order to server
-            function sendOrderToServer(orderData) {
-                // Add CSRF token
-                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-                const tableFromStorage = (() => { try { return localStorage.getItem('customer_table_code'); } catch (e) { return null; } })();
-                // Prefer URL param first (most accurate for current session), fallback to localStorage
-                const effectiveTableCode = (typeof tableCode !== 'undefined' && tableCode) ? tableCode : tableFromStorage;
-                // Attach table code to payload if present
-                if (effectiveTableCode && !orderData.table) {
-                    orderData.table = effectiveTableCode;
-                }
-                fetch('{{ route("customer.order") }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken || '',
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        },
-                        credentials: 'same-origin',
-                        body: JSON.stringify(orderData)
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(errorData => {
-                                if (response.status === 429) {
-                                    // Pass structured error for rate limit handling
-                                    throw {
-                                        isRateLimit: true,
-                                        message: errorData.message || 'Anda mencapai batas pemesanan.',
-                                        retry_after: errorData.retry_after || 60
-                                    };
-                                }
-                                throw new Error(errorData.message || 'Network error');
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            // Hide order modal
-                            orderModal.classList.add('hidden');
-
-                            // Show success modal with order details
-                            const customerName = document.getElementById('cart-customer-name').value;
-                            const totalAmount = cart.reduce((total, item) => total + (parseInt(item.price) * item.quantity), 0);
-
-                            document.getElementById('success-customer-name').textContent = customerName;
-                            document.getElementById('success-total').textContent = parseInt(totalAmount).toLocaleString('id-ID');
-                            // Set table info and instruction
-                            const tableInfoEl = document.getElementById('success-table');
-                            const tableBadgeWrap = document.getElementById('success-table-highlight');
-                            const tableBadge = document.getElementById('success-table-badge');
-                            const instructionEl = document.getElementById('success-instruction');
-                            if (data.table_info && (data.table_info.code || data.table_info.name)) {
-                                const label = data.table_info.name ? `${data.table_info.name} (${data.table_info.code || '-'})` : (data.table_info.code || '-');
-                                tableInfoEl.textContent = label;
-                                if (tableBadge && tableBadgeWrap) {
-                                    tableBadge.textContent = `Meja ${data.table_info.name ? data.table_info.name : (data.table_info.code || '-')}`;
-                                    tableBadgeWrap.classList.remove('hidden');
-                                }
-                                if (instructionEl) {
-                                    const readable = data.table_info.name || data.table_info.code || '-';
-                                    instructionEl.textContent = `Sebutkan ${readable} di kasir agar pesanan segera diproses.`;
-                                }
-                            } else {
-                                tableInfoEl.textContent = 'Tanpa Meja';
-                                if (tableBadgeWrap) tableBadgeWrap.classList.add('hidden');
-                                if (instructionEl) instructionEl.textContent = 'Sebutkan nama pemesan di kasir agar pesanan segera diproses.';
-                            }
-
-                            successModal.classList.remove('hidden');
-
-                            // Clear cart
-                            cart = [];
-                            updateCart();
-
-                            // Close cart
-                            chatContainer.classList.add('translate-x-full');
-                            chatContainer.classList.remove('translate-x-0');
-
-                            // Reset form
-                            document.getElementById('cart-customer-name').value = '';
-
-                            // Re-enable checkout button for future orders
-                            checkoutBtn.disabled = true;
+                },
+                
+                increaseQuantity(id) {
+                    const item = this.cart.find(i => i.id === id);
+                    if (item && item.quantity < item.stock) {
+                        item.quantity++;
+                    }
+                },
+                
+                decreaseQuantity(id) {
+                    const item = this.cart.find(i => i.id === id);
+                    if (item) {
+                        if (item.quantity > 1) {
+                            item.quantity--;
                         } else {
-                            showNotification('Gagal mengirim pesanan: ' + (data.message || 'Unknown error'), 'error');
+                            this.removeFromCart(id);
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        // Handle rate limit (HTTP 429)
-                        if (error && error.isRateLimit) {
-                            // Hide order modal
-                            orderModal.classList.add('hidden');
-                            const seconds = Math.max(1, parseInt(error.retry_after || 60, 10));
-                            showRateLimitCountdown(seconds, error.message);
-                            return;
-                        }
-                        
-                        // Check if it's a table not found error
-                        if (error.message && error.message.includes('tidak ditemukan')) {
-                            // Hide order modal
-                            orderModal.classList.add('hidden');
-                            
-                            // Show table error modal
-                            document.getElementById('table-error-message').textContent = error.message;
-                            tableErrorModal.classList.remove('hidden');
-                        } else {
-                            showNotification('Terjadi kesalahan saat mengirim pesanan: ' + error.message, 'error');
-                        }
+                    }
+                },
+                
+                toggleCart() {
+                    this.showCart = !this.showCart;
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
                     });
-            }
-
-            // Favorites functionality removed
-
-            // Show notification
-            function showNotification(message, type = 'success') {
-                // Remove existing notification if any
-                const existingNotification = document.querySelector('.fixed-notification');
-                if (existingNotification) {
-                    existingNotification.remove();
-                }
-
-                const notification = document.createElement('div');
-                notification.className = `fixed-notification fixed top-4 left-4 px-4 py-3 rounded-lg shadow-lg z-50 transform transition-transform duration-300 ${
-                    type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
-                }`;
-                notification.textContent = message;
-
-                document.body.appendChild(notification);
-
-                // Animate in
-                setTimeout(() => {
-                    notification.classList.remove('translate-y-[-100px]');
-                    notification.classList.add('translate-y-0');
-                }, 10);
-
-                // Remove after 3 seconds
-                setTimeout(() => {
-                    notification.classList.remove('translate-y-0');
-                    notification.classList.add('translate-y-[-100px]');
-                    setTimeout(() => {
-                        notification.remove();
-                    }, 300);
-                }, 3000);
-            }
-
-            // Show a sticky countdown banner for rate limiting (enhanced UI)
-            function showRateLimitCountdown(seconds, baseMessage = 'Terlalu sering memesan.') {
-                // Reuse or create wrapper
-                let banner = document.getElementById('rate-limit-banner');
-                if (!banner) {
-                    banner = document.createElement('div');
-                    banner.id = 'rate-limit-banner';
-                    // Full width on mobile, safe-area aware, centered inner on larger screens
-                    banner.className = 'fixed top-0 left-0 right-0 z-[100] w-screen sm:w-auto';
-                    banner.style.marginTop = 'calc(env(safe-area-inset-top, 0px) + 8px)';
-                    banner.innerHTML = `
-                        <div role="alert" aria-live="polite" class="mx-2 sm:mx-auto sm:max-w-xl">
-                        <div class="flex items-start gap-3 px-4 py-3 rounded-xl shadow-2xl border border-amber-300/60 bg-gradient-to-br from-amber-500 to-amber-600 text-white">
-                            <div class="shrink-0 mt-0.5">
-                                <i class="fas fa-hourglass-half"></i>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-sm font-semibold leading-5 break-words">
-                                    <span class="banner-message"></span>
-                                </div>
-                                <div class="mt-2 h-1.5 w-full bg-white/20 rounded-full overflow-hidden">
-                                    <div class="progress-bar h-full bg-white/90" style="width:100%"></div>
-                                </div>
-                            </div>
-                            <button type="button" class="ml-3 text-white/80 hover:text-white close-banner" aria-label="Tutup">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        </div>`;
-                    document.body.appendChild(banner);
-                }
-
-                const messageEl = banner.querySelector('.banner-message');
-                const progressEl = banner.querySelector('.progress-bar');
-                const closeBtn = banner.querySelector('.close-banner');
-
-                // Disable confirm button to prevent spam while waiting
-                if (confirmOrder) {
-                    confirmOrder.disabled = true;
-                    confirmOrder.classList.add('opacity-60', 'cursor-not-allowed');
-                }
-
-                let remaining = Math.max(1, parseInt(seconds, 10));
-                const total = remaining;
-
-                function updateUI() {
-                    if (messageEl) {
-                        messageEl.textContent = `${baseMessage} Coba lagi dalam ${remaining} detik.`;
+                },
+                
+                clearCart() {
+                    if (confirm('Yakin ingin mengosongkan keranjang?')) {
+                        this.cart = [];
                     }
-                    if (progressEl) {
-                        const pct = Math.max(0, Math.min(100, Math.round((remaining / total) * 100)));
-                        progressEl.style.width = pct + '%';
-                    }
-                }
-
-                // Clear any existing interval stored on element
-                if (banner._intervalId) {
-                    clearInterval(banner._intervalId);
-                }
-
-                updateUI();
-                banner.style.display = 'block';
-
-                const tick = () => {
-                    remaining -= 1;
-                    if (remaining <= 0) {
-                        clearInterval(banner._intervalId);
-                        banner._intervalId = null;
-                        // Remove banner and re-enable button
-                        if (banner && banner.parentNode) banner.parentNode.removeChild(banner);
-                        if (confirmOrder) {
-                            confirmOrder.disabled = false;
-                            confirmOrder.classList.remove('opacity-60', 'cursor-not-allowed');
-                        }
-                        showNotification('Anda dapat memesan kembali sekarang');
+                },
+                
+                async checkout() {
+                    if (!this.customerName.trim()) {
+                        alert('Harap masukkan nama pemesan');
                         return;
                     }
-                    updateUI();
-                };
+                    
+                    if (this.cart.length === 0) {
+                        alert('Keranjang masih kosong');
+                        return;
+                    }
+                    
+                    try {
+                        const tableCode = new URLSearchParams(window.location.search).get('table');
+                        
+                        const response = await fetch('{{ route("customer.order") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                            },
+                            body: JSON.stringify({
+                                customer_name: this.customerName,
+                                table: tableCode,
+                                total: this.cartTotal,
+                                items: this.cart.map(item => ({
+                                    id: item.id,
+                                    quantity: item.quantity
+                                }))
+                            })
+                        });
 
-                banner._intervalId = setInterval(tick, 1000);
-
-                // Close button handler
-                if (closeBtn) {
-                    closeBtn.onclick = () => {
-                        if (banner._intervalId) {
-                            clearInterval(banner._intervalId);
-                            banner._intervalId = null;
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.lastOrderTotal = this.cartTotal;
+                            this.showSuccessModal = true;
+                            this.showCart = false;
+                            this.cart = [];
+                            this.$nextTick(() => {
+                                if (window.lucide) lucide.createIcons();
+                            });
+                        } else {
+                            alert(data.message || 'Terjadi kesalahan');
                         }
-                        if (banner && banner.parentNode) banner.parentNode.removeChild(banner);
-                        // Still keep confirm disabled until window passes? Re-enable here for UX.
-                        if (confirmOrder) {
-                            confirmOrder.disabled = false;
-                            confirmOrder.classList.remove('opacity-60', 'cursor-not-allowed');
-                        }
-                    };
+                    } catch (error) {
+                        console.error('Checkout error:', error);
+                        alert('Terjadi kesalahan saat memproses pesanan');
+                    }
+                },
+                
+                closeSuccessModal() {
+                    this.showSuccessModal = false;
+                    this.customerName = '';
                 }
             }
-        });
+        }
     </script>
-    </div>
 </div>

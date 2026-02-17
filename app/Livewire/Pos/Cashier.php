@@ -29,6 +29,7 @@ class Cashier extends Component
     public $outOfStockName = '';
     public $showReceiptModal = false; // Modal sukses sederhana
     public $showPrintReceiptModal = false; // Modal struk untuk dicetak
+    public $showCheckoutModal = false;
     public $lastOrder = null;
     protected $paginationTheme = 'tailwind';
     protected $updatesQueryString = ['search'];
@@ -213,6 +214,20 @@ class Cashier extends Component
         $total = (float) $this->total;
         $this->kembalian = ($uang >= $total && $total > 0) ? $uang - $total : 0;
     }
+    public function openCheckoutModal()
+    {
+        if (count($this->cart) === 0) {
+            $this->dispatch('toast', type: 'warning', title: 'Keranjang Kosong', message: 'Silakan pilih produk terlebih dahulu.');
+            return;
+        }
+        $this->showCheckoutModal = true;
+    }
+
+    public function closeCheckoutModal()
+    {
+        $this->showCheckoutModal = false;
+    }
+
     public function checkout()
     {
         if (count($this->cart) === 0) {
@@ -335,6 +350,7 @@ class Cashier extends Component
             }
             // Hanya tampilkan modal sukses. JANGAN tampilkan struk di sini.
             $this->showReceiptModal = true;
+            $this->showCheckoutModal = false;
             // Reset cart setelah checkout berhasil
             $this->cart = [];
             session()->forget('pos_cart');
@@ -382,10 +398,26 @@ class Cashier extends Component
         $products = $query->orderBy('name')->paginate(12);
         $categories = Category::orderBy('name')->get();
         $tables = CafeTable::orderBy('name')->get();
+
+        // Calculate next order number
+        $today = now();
+        $prefix = 'ORD-' . $today->format('Ymd') . '-';
+        $lastNo = Order::where('no_order', 'like', $prefix . '%')
+            ->orderBy('id', 'desc')
+            ->value('no_order');
+        
+        $seq = 0;
+        if ($lastNo && preg_match('/^ORD-\d{8}-(\d{4})$/', $lastNo, $m)) {
+            $seq = (int) $m[1];
+        }
+        $nextSeq = $seq + 1;
+        $nextOrderNumber = $prefix . str_pad($nextSeq, 4, '0', STR_PAD_LEFT);
+
         return view('livewire.pos.cashier', [
             'products' => $products,
             'categories' => $categories,
             'tables' => $tables,
+            'nextOrderNumber' => $nextOrderNumber,
         ]);
     }
 }

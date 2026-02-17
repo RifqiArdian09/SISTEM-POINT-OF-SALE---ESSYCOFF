@@ -12,6 +12,8 @@ class TableValidationTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected $product;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -22,7 +24,7 @@ class TableValidationTest extends TestCase
             'description' => 'Test Description'
         ]);
 
-        Product::create([
+        $this->product = Product::create([
             'name' => 'Test Product',
             'price' => 10000,
             'stock' => 10,
@@ -38,7 +40,7 @@ class TableValidationTest extends TestCase
             'table' => 'INVALID-CODE',
             'items' => [
                 [
-                    'id' => 1,
+                    'id' => $this->product->id,
                     'quantity' => 1
                 ]
             ],
@@ -109,7 +111,7 @@ class TableValidationTest extends TestCase
             'table' => 'TBL-TEST1',
             'items' => [
                 [
-                    'id' => 1,
+                    'id' => $this->product->id,
                     'quantity' => 1
                 ]
             ],
@@ -138,7 +140,7 @@ class TableValidationTest extends TestCase
             'customer_name' => 'Walk-in Customer',
             'items' => [
                 [
-                    'id' => 1,
+                    'id' => $this->product->id,
                     'quantity' => 1
                 ]
             ],
